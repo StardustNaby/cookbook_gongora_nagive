@@ -297,29 +297,39 @@ class RecipeDetailScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFFFFF8F0), // Rosa pálido
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(30), // Bordes muy redondeados
         ),
         title: Text(
-          'Eliminar Receta',
+          '¿Borrar receta?',
           style: GoogleFonts.playfairDisplay(
+            fontSize: 24,
             fontWeight: FontWeight.bold,
             color: const Color(0xFF5D4037),
           ),
         ),
         content: Text(
-          '¿Estás segura de que quieres eliminar "$recipeName"?',
+          'Esta acción no se puede deshacer.',
           style: GoogleFonts.poppins(
+            fontSize: 16,
             color: const Color(0xFF5D4037),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF8B7355), // Gris
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 12,
+              ),
+            ),
             child: Text(
               'Cancelar',
               style: GoogleFonts.poppins(
-                color: const Color(0xFF8B7355),
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -352,13 +362,21 @@ class RecipeDetailScreen extends ConsumerWidget {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade300,
+              backgroundColor: const Color(0xFFFF69B4), // Rosa fuerte
               foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 12,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
             ),
             child: Text(
-              'Eliminar',
+              'Sí, borrar',
               style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
