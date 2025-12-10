@@ -38,11 +38,14 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
   
   final _stepDescriptionController = TextEditingController();
 
+  bool _isDataLoaded = false;
+
   @override
   void initState() {
     super.initState();
     if (widget.recipe != null) {
       _loadRecipeData(widget.recipe!);
+      _isDataLoaded = true;
     }
   }
 
@@ -53,9 +56,22 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
     _prepTimeController.text = recipe.prepTimeMinutes.toString();
     _difficulty = recipe.difficulty;
     _ingredients.clear();
-    _ingredients.addAll(recipe.ingredients);
+    // Create new ingredient instances with correct recipe ID
+    _ingredients.addAll(recipe.ingredients.map((ing) => Ingredient(
+      id: ing.id,
+      recipeId: recipe.id,
+      name: ing.name,
+      quantity: ing.quantity,
+      unit: ing.unit,
+    )));
     _steps.clear();
-    _steps.addAll(recipe.steps);
+    // Create new step instances with correct recipe ID
+    _steps.addAll(recipe.steps.map((step) => domain.Step(
+      id: step.id,
+      recipeId: recipe.id,
+      stepNumber: step.stepNumber,
+      description: step.description,
+    )));
   }
 
   @override
@@ -71,7 +87,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
     super.dispose();
   }
 
-  void _addIngredient() {
+  void _addIngredient([Recipe? currentRecipe]) {
     if (_ingredientNameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -100,11 +116,16 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
       return;
     }
 
+    final recipeId = currentRecipe?.id ?? 
+                     widget.recipe?.id ?? 
+                     widget.recipeId ?? 
+                     '';
+
     setState(() {
       _ingredients.add(
         Ingredient(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
-          recipeId: widget.recipe?.id ?? widget.recipeId ?? '',
+          recipeId: recipeId,
           name: _ingredientNameController.text.trim(),
           quantity: double.tryParse(_ingredientQuantityController.text.trim()) ?? 0,
           unit: _ingredientUnitController.text.trim(),
@@ -122,7 +143,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
     });
   }
 
-  void _addStep() {
+  void _addStep([Recipe? currentRecipe]) {
     if (_stepDescriptionController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -133,11 +154,16 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
       return;
     }
 
+    final recipeId = currentRecipe?.id ?? 
+                     widget.recipe?.id ?? 
+                     widget.recipeId ?? 
+                     '';
+
     setState(() {
       _steps.add(
         domain.Step(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
-          recipeId: widget.recipe?.id ?? widget.recipeId ?? '',
+          recipeId: recipeId,
           stepNumber: _steps.length + 1,
           description: _stepDescriptionController.text.trim(),
         ),
@@ -303,9 +329,14 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
       return recipeAsync.when(
         data: (recipe) {
           // Load recipe data if not already loaded
-          if (_nameController.text.isEmpty) {
+          if (!_isDataLoaded) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              _loadRecipeData(recipe);
+              if (mounted) {
+                setState(() {
+                  _loadRecipeData(recipe);
+                  _isDataLoaded = true;
+                });
+              }
             });
           }
           return _buildForm(context, recipe, recipe);
@@ -563,7 +594,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
                     ),
                     const SizedBox(height: 12),
                     TextButton.icon(
-                      onPressed: _addIngredient,
+                      onPressed: () => _addIngredient(currentRecipe ?? recipe),
                       icon: const Icon(
                         Icons.add_circle_outline,
                         color: Color(0xFFFF69B4),
@@ -684,7 +715,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
                     ),
                     const SizedBox(height: 12),
                     TextButton.icon(
-                      onPressed: _addStep,
+                      onPressed: () => _addStep(currentRecipe ?? recipe),
                       icon: const Icon(
                         Icons.add_circle_outline,
                         color: Color(0xFFFF69B4),
