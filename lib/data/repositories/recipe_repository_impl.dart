@@ -1,3 +1,4 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/recipe.dart';
 import '../../domain/repositories/recipe_repository.dart';
 import '../../core/config/supabase_config.dart';
@@ -21,13 +22,14 @@ class RecipeRepositoryImpl implements RecipeRepository {
       for (final recipeData in response) {
         final recipeId = recipeData['id'] as String;
         
-        // Fetch ingredients and steps for this recipe
+        // Fetch ingredients
         final ingredientsResponse = await _supabase
             .from('ingredients')
             .select()
             .eq('recipe_id', recipeId)
             .order('name');
         
+        // Fetch steps
         final stepsResponse = await _supabase
             .from('steps')
             .select()
@@ -56,7 +58,6 @@ class RecipeRepositoryImpl implements RecipeRepository {
           .eq('id', id)
           .single();
 
-      // Fetch ingredients and steps
       final ingredientsResponse = await _supabase
           .from('ingredients')
           .select()
@@ -82,30 +83,34 @@ class RecipeRepositoryImpl implements RecipeRepository {
   @override
   Future<Recipe> createRecipe(Recipe recipe) async {
     try {
+      final userId = _supabase.auth.currentUser!.id; // 1. OBTENEMOS EL ID DEL USUARIO
       final recipeModel = RecipeModel.fromEntity(recipe);
       final recipeJson = recipeModel.toJson();
       
-      // Remove nested data for recipe insert
+      // Preparar datos para insertar
       final recipeData = Map<String, dynamic>.from(recipeJson);
       recipeData.remove('ingredients');
       recipeData.remove('steps');
+      recipeData.remove('id'); // 2. BORRAMOS EL ID TEMPORAL (Supabase generará uno válido)
+      recipeData['user_id'] = userId; // 3. AGREGAMOS EL ID DEL USUARIO
       
-      // Insert recipe
+      // Insertar receta
       final response = await _supabase
           .from('recipes')
           .insert(recipeData)
           .select()
           .single();
       
-      final recipeId = response['id'] as String;
+      final newRecipeId = response['id'] as String;
       
-      // Insert ingredients
+      // Insertar ingredientes
       if (recipe.ingredients.isNotEmpty) {
         final ingredientsData = recipe.ingredients
             .map((ingredient) {
               final ingModel = IngredientModel.fromEntity(ingredient);
               final ingJson = ingModel.toJson();
-              ingJson['recipe_id'] = recipeId;
+              ingJson['recipe_id'] = newRecipeId;
+              ingJson.remove('id'); // Importante: Borrar ID temporal
               return ingJson;
             })
             .toList();
@@ -113,13 +118,14 @@ class RecipeRepositoryImpl implements RecipeRepository {
         await _supabase.from('ingredients').insert(ingredientsData);
       }
       
-      // Insert steps
+      // Insertar pasos
       if (recipe.steps.isNotEmpty) {
         final stepsData = recipe.steps
             .map((step) {
               final stepModel = StepModel.fromEntity(step);
               final stepJson = stepModel.toJson();
-              stepJson['recipe_id'] = recipeId;
+              stepJson['recipe_id'] = newRecipeId;
+              stepJson.remove('id'); // Importante: Borrar ID temporal
               return stepJson;
             })
             .toList();
@@ -127,8 +133,7 @@ class RecipeRepositoryImpl implements RecipeRepository {
         await _supabase.from('steps').insert(stepsData);
       }
       
-      // Fetch complete recipe with relations
-      return await getRecipeById(recipeId);
+      return await getRecipeById(newRecipeId);
     } catch (e) {
       throw Exception('Error creating recipe: $e');
     }
@@ -140,51 +145,47 @@ class RecipeRepositoryImpl implements RecipeRepository {
       final recipeModel = RecipeModel.fromEntity(recipe);
       final recipeJson = recipeModel.toJson();
       
-      // Remove nested data for recipe update
       final recipeData = Map<String, dynamic>.from(recipeJson);
       recipeData.remove('ingredients');
       recipeData.remove('steps');
       recipeData['updated_at'] = DateTime.now().toIso8601String();
+      // En update no quitamos el ID porque ya es un UUID válido existente
       
-      // Update recipe
       await _supabase
           .from('recipes')
           .update(recipeData)
           .eq('id', recipe.id);
       
-      // Delete existing ingredients and steps
+      // Borrar antiguos y re-crear (Estrategia simple y segura)
       await _supabase.from('ingredients').delete().eq('recipe_id', recipe.id);
       await _supabase.from('steps').delete().eq('recipe_id', recipe.id);
       
-      // Insert updated ingredients
       if (recipe.ingredients.isNotEmpty) {
         final ingredientsData = recipe.ingredients
             .map((ingredient) {
               final ingModel = IngredientModel.fromEntity(ingredient);
               final ingJson = ingModel.toJson();
               ingJson['recipe_id'] = recipe.id;
+              ingJson.remove('id'); // Siempre dejamos que DB genere nuevos IDs al reinsertar
               return ingJson;
             })
             .toList();
-        
         await _supabase.from('ingredients').insert(ingredientsData);
       }
       
-      // Insert updated steps
       if (recipe.steps.isNotEmpty) {
         final stepsData = recipe.steps
             .map((step) {
               final stepModel = StepModel.fromEntity(step);
               final stepJson = stepModel.toJson();
               stepJson['recipe_id'] = recipe.id;
+              stepJson.remove('id'); 
               return stepJson;
             })
             .toList();
-        
         await _supabase.from('steps').insert(stepsData);
       }
       
-      // Fetch updated recipe with relations
       return await getRecipeById(recipe.id);
     } catch (e) {
       throw Exception('Error updating recipe: $e');
@@ -194,11 +195,8 @@ class RecipeRepositoryImpl implements RecipeRepository {
   @override
   Future<void> deleteRecipe(String id) async {
     try {
-      // Delete related ingredients and steps first
-      await _supabase.from('ingredients').delete().eq('recipe_id', id);
-      await _supabase.from('steps').delete().eq('recipe_id', id);
-      
-      // Delete recipe
+      // Gracias al ON DELETE CASCADE de Supabase, solo necesitamos borrar la receta
+      // y los ingredientes/pasos se borran solos.
       await _supabase.from('recipes').delete().eq('id', id);
     } catch (e) {
       throw Exception('Error deleting recipe: $e');
@@ -208,20 +206,14 @@ class RecipeRepositoryImpl implements RecipeRepository {
   @override
   Future<Recipe> toggleFavorite(String id) async {
     try {
-      // Get current recipe
       final recipe = await getRecipeById(id);
-      
-      // Toggle favorite status
       await _supabase
           .from('recipes')
           .update({'is_favorite': !recipe.isFavorite})
           .eq('id', id);
-      
-      // Return updated recipe
       return await getRecipeById(id);
     } catch (e) {
       throw Exception('Error toggling favorite: $e');
     }
   }
 }
-
