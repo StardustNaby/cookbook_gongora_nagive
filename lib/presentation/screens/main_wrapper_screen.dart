@@ -19,9 +19,20 @@ class MainWrapperScreen extends ConsumerWidget {
     final themeMode = ref.watch(themeProvider);
     final isDarkMode = themeMode == ThemeMode.dark;
     
+    // Determinar el título basado en la ruta actual
+    final currentIndex = navigationShell.currentIndex;
+    final title = currentIndex == 0 ? 'Mis Recetas' : 'Recetas Favoritas';
+    
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        title: Text(
+          title,
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         actions: [
           // Theme toggle button
           IconButton(

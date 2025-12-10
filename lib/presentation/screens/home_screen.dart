@@ -303,21 +303,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: null,
       body: Column(
         children: [
-          // Title section (ya que no hay AppBar)
+          // Botones de acción (filtros y refresh) - el título está en el AppBar del MainWrapperScreen
           Container(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
             color: Theme.of(context).scaffoldBackgroundColor,
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Expanded(
-                  child: Text(
-                    widget.showFavoritesOnly ? 'Recetas Favoritas' : 'Mis Recetas',
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
                 IconButton(
                   icon: const Icon(Icons.filter_list),
                   onPressed: () => _showFilterBottomSheet(context),
