@@ -39,6 +39,14 @@ class _SplashScreenState extends State<SplashScreen> {
                 fit: BoxFit.contain,
                 repeat: true,
                 animate: true,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback si la animación falla
+                  return const Icon(
+                    Icons.restaurant_menu,
+                    size: 120,
+                    color: Color(0xFFFF91A4),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 32),

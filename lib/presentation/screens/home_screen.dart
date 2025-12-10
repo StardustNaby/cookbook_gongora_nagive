@@ -415,6 +415,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         fit: BoxFit.contain,
                         repeat: true,
                         animate: true,
+                        errorBuilder: (context, error, stackTrace) {
+                          // Fallback si la animación falla
+                          return Icon(
+                            Icons.menu_book_outlined,
+                            size: 100,
+                            color: Theme.of(context).colorScheme.secondary.withOpacity(0.4),
+                          );
+                        },
                       ),
                     )
                   else
