@@ -83,16 +83,33 @@ class RecipeRepositoryImpl implements RecipeRepository {
   @override
   Future<Recipe> createRecipe(Recipe recipe) async {
     try {
-      final userId = _supabase.auth.currentUser!.id; // 1. OBTENEMOS EL ID DEL USUARIO
+      // Verificar que el usuario esté autenticado
+      final currentUser = _supabase.auth.currentUser;
+      if (currentUser == null) {
+        throw Exception('Usuario no autenticado. Por favor inicia sesión.');
+      }
+      
+      final userId = currentUser.id;
       final recipeModel = RecipeModel.fromEntity(recipe);
       final recipeJson = recipeModel.toJson();
       
       // Preparar datos para insertar
-      final recipeData = Map<String, dynamic>.from(recipeJson);
-      recipeData.remove('ingredients');
-      recipeData.remove('steps');
-      recipeData.remove('id'); // 2. BORRAMOS EL ID TEMPORAL (Supabase generará uno válido)
-      recipeData['user_id'] = userId; // 3. AGREGAMOS EL ID DEL USUARIO
+      final recipeData = <String, dynamic>{};
+      
+      // Copiar solo los campos necesarios (sin id, ingredients, steps)
+      recipeData['name'] = recipeJson['name'] as String;
+      if (recipeJson['description'] != null) {
+        recipeData['description'] = recipeJson['description'] as String;
+      }
+      if (recipeJson['image_url'] != null) {
+        recipeData['image_url'] = recipeJson['image_url'] as String;
+      }
+      recipeData['prep_time_minutes'] = recipeJson['prep_time_minutes'] as int; // Asegurar que sea int
+      recipeData['difficulty'] = recipeJson['difficulty'] as String;
+      recipeData['is_favorite'] = recipeJson['is_favorite'] as bool;
+      recipeData['user_id'] = userId; // OBLIGATORIO: ID del usuario
+      // NO incluimos 'id' - Supabase lo generará automáticamente
+      // NO incluimos 'created_at' ni 'updated_at' - Supabase los maneja
       
       // Insertar receta
       final response = await _supabase
@@ -109,9 +126,13 @@ class RecipeRepositoryImpl implements RecipeRepository {
             .map((ingredient) {
               final ingModel = IngredientModel.fromEntity(ingredient);
               final ingJson = ingModel.toJson();
-              ingJson['recipe_id'] = newRecipeId;
-              ingJson.remove('id'); // Importante: Borrar ID temporal
-              return ingJson;
+              return <String, dynamic>{
+                'recipe_id': newRecipeId,
+                'name': ingJson['name'] as String,
+                'quantity': (ingJson['quantity'] as num).toDouble(), // Asegurar que sea double
+                'unit': ingJson['unit'] as String,
+                // NO incluimos 'id' - Supabase lo generará
+              };
             })
             .toList();
         
@@ -124,9 +145,12 @@ class RecipeRepositoryImpl implements RecipeRepository {
             .map((step) {
               final stepModel = StepModel.fromEntity(step);
               final stepJson = stepModel.toJson();
-              stepJson['recipe_id'] = newRecipeId;
-              stepJson.remove('id'); // Importante: Borrar ID temporal
-              return stepJson;
+              return <String, dynamic>{
+                'recipe_id': newRecipeId,
+                'step_number': stepJson['step_number'] as int, // Asegurar que sea int
+                'description': stepJson['description'] as String,
+                // NO incluimos 'id' - Supabase lo generará
+              };
             })
             .toList();
         
@@ -135,7 +159,15 @@ class RecipeRepositoryImpl implements RecipeRepository {
       
       return await getRecipeById(newRecipeId);
     } catch (e) {
-      throw Exception('Error creating recipe: $e');
+      // Mejorar el mensaje de error para debugging
+      final errorMessage = e.toString();
+      if (errorMessage.contains('null value') || errorMessage.contains('violates')) {
+        throw Exception('Error de validación: Verifica que todos los campos requeridos estén completos. Detalle: $errorMessage');
+      } else if (errorMessage.contains('permission') || errorMessage.contains('RLS')) {
+        throw Exception('Error de permisos: Verifica que estés autenticado correctamente. Detalle: $errorMessage');
+      } else {
+        throw Exception('Error creando receta: $errorMessage');
+      }
     }
   }
 
