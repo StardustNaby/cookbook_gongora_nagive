@@ -72,7 +72,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
     super.dispose();
   }
 
-  void _addIngredient() {
+  void _addIngredient([Recipe? recipe]) {
     if (_ingredientNameController.text.isNotEmpty &&
         _ingredientQuantityController.text.isNotEmpty &&
         _ingredientUnitController.text.isNotEmpty) {
@@ -80,7 +80,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
         _ingredients.add(
           Ingredient(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
-            recipeId: widget.recipe?.id ?? '',
+            recipeId: recipe?.id ?? widget.recipe?.id ?? widget.recipeId ?? '',
             name: _ingredientNameController.text,
             quantity: double.tryParse(_ingredientQuantityController.text) ?? 0,
             unit: _ingredientUnitController.text,
@@ -99,13 +99,13 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
     });
   }
 
-  void _addStep() {
+  void _addStep([Recipe? recipe]) {
     if (_stepDescriptionController.text.isNotEmpty) {
       setState(() {
         _steps.add(
           Step(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
-            recipeId: widget.recipe?.id ?? '',
+            recipeId: recipe?.id ?? widget.recipe?.id ?? widget.recipeId ?? '',
             stepNumber: _steps.length + 1,
             description: _stepDescriptionController.text,
           ),
@@ -380,7 +380,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.add),
-                    onPressed: _addStep,
+                    onPressed: () => _addStep(recipe),
                   ),
                 ],
               ),
