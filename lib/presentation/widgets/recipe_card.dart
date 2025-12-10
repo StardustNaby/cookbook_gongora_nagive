@@ -142,10 +142,26 @@ class RecipeCard extends StatelessWidget {
   }
 
   Widget _buildImageWidget(String? imageUrl) {
-    final cleanedUrl = ImageHelper.cleanImageUrl(imageUrl);
-    final isValid = ImageHelper.isValidImageUrl(cleanedUrl);
+    // Si no hay URL, mostrar placeholder
+    if (imageUrl == null || imageUrl.trim().isEmpty) {
+      return Container(
+        height: 180,
+        width: double.infinity,
+        color: const Color(0xFFFFE4E9),
+        child: const Icon(
+          Icons.restaurant_menu,
+          size: 64,
+          color: Color(0xFFFFB6C1),
+        ),
+      );
+    }
     
-    if (!isValid || cleanedUrl == null) {
+    // Limpiar la URL
+    final cleanedUrl = ImageHelper.cleanImageUrl(imageUrl);
+    
+    // Si después de limpiar no es válida, mostrar placeholder
+    if (cleanedUrl == null || !ImageHelper.isValidImageUrl(cleanedUrl)) {
+      debugPrint('Invalid image URL: $imageUrl (cleaned: $cleanedUrl)');
       return Container(
         height: 180,
         width: double.infinity,
@@ -174,8 +190,9 @@ class RecipeCard extends StatelessWidget {
         ),
       ),
       errorWidget: (context, url, error) {
-        // Log del error para debugging (opcional)
-        debugPrint('Error loading image: $url - $error');
+        // Log del error para debugging
+        debugPrint('Error loading image: $url');
+        debugPrint('Error details: $error');
         return Container(
           height: 180,
           color: const Color(0xFFFFE4E9),
@@ -188,11 +205,15 @@ class RecipeCard extends StatelessWidget {
                 color: Color(0xFFFFB6C1),
               ),
               const SizedBox(height: 8),
-              Text(
-                'Error al cargar',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: const Color(0xFFFFB6C1).withOpacity(0.7),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text(
+                  'Error al cargar imagen',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: const Color(0xFFFFB6C1).withOpacity(0.7),
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ],

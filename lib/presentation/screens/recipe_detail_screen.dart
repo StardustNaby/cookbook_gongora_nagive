@@ -271,10 +271,26 @@ class RecipeDetailScreen extends ConsumerWidget {
   }
 
   Widget _buildImageWidget(String? imageUrl) {
-    final cleanedUrl = ImageHelper.cleanImageUrl(imageUrl);
-    final isValid = ImageHelper.isValidImageUrl(cleanedUrl);
+    // Si no hay URL, mostrar placeholder
+    if (imageUrl == null || imageUrl.trim().isEmpty) {
+      return Container(
+        color: const Color(0xFFFFE4E9),
+        child: const Center(
+          child: Icon(
+            Icons.restaurant_menu,
+            size: 80,
+            color: Color(0xFFFFB6C1),
+          ),
+        ),
+      );
+    }
     
-    if (!isValid || cleanedUrl == null) {
+    // Limpiar la URL
+    final cleanedUrl = ImageHelper.cleanImageUrl(imageUrl);
+    
+    // Si después de limpiar no es válida, mostrar placeholder
+    if (cleanedUrl == null || !ImageHelper.isValidImageUrl(cleanedUrl)) {
+      debugPrint('Invalid image URL: $imageUrl (cleaned: $cleanedUrl)');
       return Container(
         color: const Color(0xFFFFE4E9),
         child: const Center(
@@ -300,7 +316,8 @@ class RecipeDetailScreen extends ConsumerWidget {
         ),
       ),
       errorWidget: (context, url, error) {
-        debugPrint('Error loading image: $url - $error');
+        debugPrint('Error loading image: $url');
+        debugPrint('Error details: $error');
         return Container(
           color: const Color(0xFFFFE4E9),
           child: Column(
@@ -312,11 +329,15 @@ class RecipeDetailScreen extends ConsumerWidget {
                 color: Color(0xFFFFB6C1),
               ),
               const SizedBox(height: 8),
-              Text(
-                'Error al cargar imagen',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: const Color(0xFFFFB6C1).withOpacity(0.7),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  'Error al cargar imagen',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: const Color(0xFFFFB6C1).withOpacity(0.7),
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ],

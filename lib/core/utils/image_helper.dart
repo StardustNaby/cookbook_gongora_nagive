@@ -41,6 +41,7 @@ class ImageHelper {
   }
   
   /// Valida si una URL es válida para cargar imágenes
+  /// Ahora es más permisiva - solo verifica que sea una URL HTTP/HTTPS válida
   static bool isValidImageUrl(String? url) {
     if (url == null || url.isEmpty) return false;
     
@@ -49,22 +50,14 @@ class ImageHelper {
     
     try {
       final uri = Uri.parse(cleanedUrl);
+      // Solo verificar que tenga scheme HTTP/HTTPS y un host válido
       if (!uri.hasScheme || (uri.scheme != 'http' && uri.scheme != 'https')) {
         return false;
       }
       
-      // Verificar que tenga una extensión de imagen común o sea una URL de imagen
-      final path = uri.path.toLowerCase();
-      final hasImageExtension = path.endsWith('.jpg') ||
-          path.endsWith('.jpeg') ||
-          path.endsWith('.png') ||
-          path.endsWith('.gif') ||
-          path.endsWith('.webp') ||
-          path.endsWith('.bmp') ||
-          path.contains('/image') ||
-          path.contains('/img');
-      
-      return hasImageExtension || uri.host.isNotEmpty;
+      // Si tiene un host válido, es suficiente
+      // No requerimos extensión de imagen porque muchas APIs no la tienen
+      return uri.host.isNotEmpty;
     } catch (e) {
       return false;
     }
