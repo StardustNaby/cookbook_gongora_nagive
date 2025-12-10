@@ -31,22 +31,37 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Lottie Animation
+            // Lottie Animation con manejo de errores robusto
             SizedBox(
               width: 250,
               height: 250,
-              child: Lottie.asset(
-                'assets/lottie/cooking.lottie',
-                fit: BoxFit.contain,
-                repeat: true,
-                animate: true,
-                errorBuilder: (context, error, stackTrace) {
-                  // Fallback si la animación falla
-                  return const Icon(
-                    Icons.restaurant_menu,
-                    size: 120,
-                    color: Color(0xFFFF91A4),
-                  );
+              child: Builder(
+                builder: (context) {
+                  try {
+                    return Lottie.asset(
+                      'assets/lottie/cooking.lottie',
+                      fit: BoxFit.contain,
+                      repeat: true,
+                      animate: true,
+                      errorBuilder: (context, error, stackTrace) {
+                        debugPrint('Error loading Lottie cooking.lottie: $error');
+                        // Fallback si la animación falla
+                        return const Icon(
+                          Icons.restaurant_menu,
+                          size: 120,
+                          color: Color(0xFFFF91A4),
+                        );
+                      },
+                    );
+                  } catch (e) {
+                    debugPrint('Exception loading Lottie cooking.lottie: $e');
+                    // Fallback en caso de excepción
+                    return const Icon(
+                      Icons.restaurant_menu,
+                      size: 120,
+                      color: Color(0xFFFF91A4),
+                    );
+                  }
                 },
               ),
             ),
