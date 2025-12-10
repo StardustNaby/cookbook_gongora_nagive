@@ -9,6 +9,14 @@ class ImageHelper {
   static String? cleanImageUrl(String? url) {
     if (url == null || url.isEmpty) return null;
     
+    // Si es una URL de Google Share (share.google), no es una URL directa de imagen
+    // Estas URLs requieren autenticación y no funcionan directamente
+    if (url.contains('share.google')) {
+      // Intentar convertir a URL de Google Drive si es posible
+      // Pero generalmente estas URLs no funcionan como imágenes directas
+      return null; // Retornar null para que se muestre el placeholder
+    }
+    
     // Si es una URL de Google Images, extraer la URL real
     if (url.contains('google.com/imgres')) {
       final uri = Uri.parse(url);

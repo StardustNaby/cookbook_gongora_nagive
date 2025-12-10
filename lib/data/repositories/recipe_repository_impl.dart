@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/recipe.dart';
 import '../../domain/repositories/recipe_repository.dart';
@@ -8,6 +9,57 @@ import '../models/step_model.dart';
 
 class RecipeRepositoryImpl implements RecipeRepository {
   final _supabase = SupabaseConfig.client;
+  
+  /// Mapa de URLs antiguas de Google Share a nuevas URLs directas
+  /// Se actualiza automáticamente cuando se detectan URLs de Google Share
+  static const Map<String, String> _imageUrlMappings = {
+    // Mapeo basado en nombres de recetas comunes
+    'papas': 'https://www.johaprato.com/files/styles/flexslider_full/public/papas_fritas.jpg?itok=VaKy_ix9',
+    'frita': 'https://www.johaprato.com/files/styles/flexslider_full/public/papas_fritas.jpg?itok=VaKy_ix9',
+    'french': 'https://www.johaprato.com/files/styles/flexslider_full/public/papas_fritas.jpg?itok=VaKy_ix9',
+    'pastel': 'https://i.pinimg.com/736x/97/32/fb/9732fbf43434915aa777468897715690.jpg',
+    'fresa': 'https://i.pinimg.com/736x/97/32/fb/9732fbf43434915aa777468897715690.jpg',
+    'strawberry': 'https://i.pinimg.com/736x/97/32/fb/9732fbf43434915aa777468897715690.jpg',
+  };
+  
+  /// Actualiza automáticamente URLs de Google Share a URLs directas
+  /// basándose en el nombre de la receta
+  String? _updateImageUrlIfNeeded(String? imageUrl, String recipeName) {
+    if (imageUrl == null || imageUrl.isEmpty) return imageUrl;
+    
+    // Si es una URL de Google Share, intentar mapearla
+    if (imageUrl.contains('share.google')) {
+      final nameLower = recipeName.toLowerCase();
+      
+      // Buscar coincidencias en el nombre de la receta
+      for (final entry in _imageUrlMappings.entries) {
+        if (nameLower.contains(entry.key)) {
+          // Actualizar en la base de datos de forma asíncrona
+          _updateImageUrlInDatabase(recipeName, entry.value);
+          return entry.value;
+        }
+      }
+      
+      // Si no hay coincidencia, retornar null para mostrar placeholder
+      return null;
+    }
+    
+    return imageUrl;
+  }
+  
+  /// Actualiza la URL de la imagen en la base de datos
+  Future<void> _updateImageUrlInDatabase(String recipeName, String newUrl) async {
+    try {
+      // Buscar la receta por nombre y actualizar su URL
+      await _supabase
+          .from('recipes')
+          .update({'image_url': newUrl})
+          .ilike('name', '%$recipeName%');
+    } catch (e) {
+      // Silenciar errores de actualización para no interrumpir el flujo
+      debugPrint('Error updating image URL for $recipeName: $e');
+    }
+  }
 
   @override
   Future<List<Recipe>> getRecipes() async {
@@ -39,6 +91,14 @@ class RecipeRepositoryImpl implements RecipeRepository {
         final recipeJson = Map<String, dynamic>.from(recipeData);
         recipeJson['ingredients'] = ingredientsResponse;
         recipeJson['steps'] = stepsResponse;
+        
+        // Actualizar URL de imagen si es necesario
+        final recipeName = recipeJson['name'] as String;
+        final currentImageUrl = recipeJson['image_url'] as String?;
+        final updatedImageUrl = _updateImageUrlIfNeeded(currentImageUrl, recipeName);
+        if (updatedImageUrl != currentImageUrl) {
+          recipeJson['image_url'] = updatedImageUrl;
+        }
         
         recipes.add(RecipeModel.fromJson(recipeJson));
       }
@@ -73,6 +133,14 @@ class RecipeRepositoryImpl implements RecipeRepository {
       final recipeJson = Map<String, dynamic>.from(response);
       recipeJson['ingredients'] = ingredientsResponse;
       recipeJson['steps'] = stepsResponse;
+      
+      // Actualizar URL de imagen si es necesario
+      final recipeName = recipeJson['name'] as String;
+      final currentImageUrl = recipeJson['image_url'] as String?;
+      final updatedImageUrl = _updateImageUrlIfNeeded(currentImageUrl, recipeName);
+      if (updatedImageUrl != currentImageUrl) {
+        recipeJson['image_url'] = updatedImageUrl;
+      }
       
       return RecipeModel.fromJson(recipeJson);
     } catch (e) {
