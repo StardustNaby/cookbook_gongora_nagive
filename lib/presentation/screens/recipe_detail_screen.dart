@@ -68,13 +68,13 @@ class RecipeDetailScreen extends ConsumerWidget {
                     icon: Icon(
                       recipe.isFavorite ? Icons.favorite : Icons.favorite_border,
                       color: recipe.isFavorite 
-                          ? const Color(0xFFFF69B4) 
-                          : Colors.white,
+                          ? const Color(0xFFFF1493) // Rosa fuerte/Rojo
+                          : Colors.white, // Corazón vacío
                     ),
                     onPressed: () {
                       ref.read(recipeNotifierProvider.notifier).toggleFavorite(recipe.id);
                     },
-                    tooltip: 'Favorito',
+                    tooltip: recipe.isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos',
                   ),
                   // Edit button
                   IconButton(
