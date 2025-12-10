@@ -24,13 +24,11 @@ class AppTheme {
         primary: primaryPink,
         secondary: accentPink,
         tertiary: lavenderPink,
-        surface: cream,
-        background: Colors.white,
+        surface: Colors.white,
         error: Colors.red.shade300,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: Colors.black87,
-        onBackground: Colors.black87,
         onError: Colors.white,
         brightness: Brightness.light,
       ),
@@ -82,7 +80,7 @@ class AppTheme {
           fontSize: 28,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: Colors.white,
         elevation: 2,
         shape: RoundedRectangleBorder(
@@ -218,12 +216,10 @@ class AppTheme {
         secondary: accentPink,
         tertiary: lavenderPink,
         surface: const Color(0xFF2D2D2D),
-        background: const Color(0xFF1E1E1E),
         error: Colors.red.shade300,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: Colors.white,
-        onBackground: Colors.white,
         onError: Colors.white,
         brightness: Brightness.dark,
       ),
@@ -269,7 +265,7 @@ class AppTheme {
           fontSize: 28,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: const Color(0xFF2D2D2D),
         elevation: 2,
         shape: RoundedRectangleBorder(

@@ -6,14 +6,15 @@ import '../../core/config/supabase_config.dart';
 import 'repository_providers.dart';
 
 // Auth State Notifier
-class AuthNotifier extends StateNotifier<AsyncValue<String?>> {
-  AuthNotifier(this._repository) : super(const AsyncValue.loading()) {
+class AuthNotifier extends Notifier<AsyncValue<String?>> {
+  StreamSubscription<AuthState>? _authSubscription;
+
+  @override
+  AsyncValue<String?> build() {
     _checkAuthStatus();
     _listenToAuthChanges();
+    return const AsyncValue.loading();
   }
-
-  final AuthRepository _repository;
-  StreamSubscription<AuthState>? _authSubscription;
 
   void _listenToAuthChanges() {
     final supabase = SupabaseConfig.client;
@@ -25,7 +26,8 @@ class AuthNotifier extends StateNotifier<AsyncValue<String?>> {
 
   Future<void> _checkAuthStatus() async {
     try {
-      final userId = await _repository.getCurrentUserId();
+      final repository = ref.read(authRepositoryProvider);
+      final userId = await repository.getCurrentUserId();
       state = AsyncValue.data(userId);
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
@@ -35,8 +37,9 @@ class AuthNotifier extends StateNotifier<AsyncValue<String?>> {
   Future<void> signIn(String email, String password) async {
     state = const AsyncValue.loading();
     try {
-      await _repository.signIn(email, password);
-      final userId = await _repository.getCurrentUserId();
+      final repository = ref.read(authRepositoryProvider);
+      await repository.signIn(email, password);
+      final userId = await repository.getCurrentUserId();
       state = AsyncValue.data(userId);
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
@@ -46,8 +49,9 @@ class AuthNotifier extends StateNotifier<AsyncValue<String?>> {
   Future<void> signUp(String email, String password) async {
     state = const AsyncValue.loading();
     try {
-      await _repository.signUp(email, password);
-      final userId = await _repository.getCurrentUserId();
+      final repository = ref.read(authRepositoryProvider);
+      await repository.signUp(email, password);
+      final userId = await repository.getCurrentUserId();
       state = AsyncValue.data(userId);
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
@@ -56,27 +60,21 @@ class AuthNotifier extends StateNotifier<AsyncValue<String?>> {
 
   Future<void> signOut() async {
     try {
-      await _repository.signOut();
+      final repository = ref.read(authRepositoryProvider);
+      await repository.signOut();
       state = const AsyncValue.data(null);
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
     }
   }
 
-  Stream<AsyncValue<String?>> get stream {
-    return Stream.value(state);
-  }
-
-  @override
   void dispose() {
     _authSubscription?.cancel();
-    super.dispose();
   }
 }
 
-final authNotifierProvider = StateNotifierProvider<AuthNotifier, AsyncValue<String?>>((ref) {
-  final repository = ref.watch(authRepositoryProvider);
-  return AuthNotifier(repository);
+final authNotifierProvider = NotifierProvider<AuthNotifier, AsyncValue<String?>>(() {
+  return AuthNotifier();
 });
 
 // Is Signed In Provider

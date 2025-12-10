@@ -16,17 +16,18 @@ final recipeByIdProvider = FutureProvider.family<Recipe, String>((ref, id) async
 });
 
 // Recipe Notifier for CRUD operations
-class RecipeNotifier extends StateNotifier<AsyncValue<List<Recipe>>> {
-  RecipeNotifier(this._repository) : super(const AsyncValue.loading()) {
+class RecipeNotifier extends Notifier<AsyncValue<List<Recipe>>> {
+  @override
+  AsyncValue<List<Recipe>> build() {
     _loadRecipes();
+    return const AsyncValue.loading();
   }
-
-  final RecipeRepository _repository;
 
   Future<void> _loadRecipes() async {
     state = const AsyncValue.loading();
     try {
-      final recipes = await _repository.getRecipes();
+      final repository = ref.read(recipeRepositoryProvider);
+      final recipes = await repository.getRecipes();
       state = AsyncValue.data(recipes);
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
@@ -35,7 +36,8 @@ class RecipeNotifier extends StateNotifier<AsyncValue<List<Recipe>>> {
 
   Future<void> createRecipe(Recipe recipe) async {
     try {
-      await _repository.createRecipe(recipe);
+      final repository = ref.read(recipeRepositoryProvider);
+      await repository.createRecipe(recipe);
       await _loadRecipes();
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
@@ -44,7 +46,8 @@ class RecipeNotifier extends StateNotifier<AsyncValue<List<Recipe>>> {
 
   Future<void> updateRecipe(Recipe recipe) async {
     try {
-      await _repository.updateRecipe(recipe);
+      final repository = ref.read(recipeRepositoryProvider);
+      await repository.updateRecipe(recipe);
       await _loadRecipes();
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
@@ -53,7 +56,8 @@ class RecipeNotifier extends StateNotifier<AsyncValue<List<Recipe>>> {
 
   Future<void> deleteRecipe(String id) async {
     try {
-      await _repository.deleteRecipe(id);
+      final repository = ref.read(recipeRepositoryProvider);
+      await repository.deleteRecipe(id);
       await _loadRecipes();
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
@@ -62,7 +66,8 @@ class RecipeNotifier extends StateNotifier<AsyncValue<List<Recipe>>> {
 
   Future<void> toggleFavorite(String id) async {
     try {
-      await _repository.toggleFavorite(id);
+      final repository = ref.read(recipeRepositoryProvider);
+      await repository.toggleFavorite(id);
       await _loadRecipes();
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
@@ -74,9 +79,8 @@ class RecipeNotifier extends StateNotifier<AsyncValue<List<Recipe>>> {
   }
 }
 
-final recipeNotifierProvider = StateNotifierProvider<RecipeNotifier, AsyncValue<List<Recipe>>>((ref) {
-  final repository = ref.watch(recipeRepositoryProvider);
-  return RecipeNotifier(repository);
+final recipeNotifierProvider = NotifierProvider<RecipeNotifier, AsyncValue<List<Recipe>>>(() {
+  return RecipeNotifier();
 });
 
 // Favorite Recipes Provider
@@ -89,4 +93,3 @@ final favoriteRecipesProvider = Provider<AsyncValue<List<Recipe>>>((ref) {
     error: (error, stackTrace) => AsyncValue.error(error, stackTrace),
   );
 });
-

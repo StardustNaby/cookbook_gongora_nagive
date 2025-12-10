@@ -31,9 +31,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       return null;
     },
-    refreshListenable: GoRouterRefreshStream(
-      Stream.value(ref.watch(isSignedInProvider)),
-    ),
     routes: [
       GoRoute(
         path: '/login',

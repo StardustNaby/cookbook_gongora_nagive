@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/step.dart';
+import '../../domain/entities/step.dart' as domain;
 
 class StepItem extends StatelessWidget {
-  final Step step;
+  final domain.Step step;
 
   const StepItem({
     super.key,

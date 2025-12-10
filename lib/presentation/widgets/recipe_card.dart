@@ -18,112 +18,139 @@ class RecipeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.all(8),
       clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      color: const Color(0xFFFFF8F0), // Rosa muy pálido / crema
+      elevation: 2,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
-            Stack(
-              children: [
-                CachedNetworkImage(
-                  imageUrl: recipe.imageUrl ?? '',
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    height: 200,
-                    color: Colors.grey[300],
-                    child: const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    height: 200,
-                    color: Colors.grey[300],
-                    child: const Icon(
-                      Icons.restaurant,
-                      size: 64,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ),
-                // Favorite button
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: IconButton(
-                    icon: Icon(
-                      recipe.isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: recipe.isFavorite ? Colors.red : Colors.white,
-                    ),
-                    onPressed: onFavoriteTap,
-                  ),
-                ),
-                // Difficulty badge
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.secondary.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(15),
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.tertiary,
-                        width: 1.5,
+            // Image with rounded top corners
+            ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+              child: Stack(
+                children: [
+                  CachedNetworkImage(
+                    imageUrl: recipe.imageUrl ?? '',
+                    height: 180,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      height: 180,
+                      color: const Color(0xFFFFE4E9),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFFFFB6C1),
+                        ),
                       ),
                     ),
-                    child: Text(
-                      recipe.difficulty.displayName,
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                    errorWidget: (context, url, error) => Container(
+                      height: 180,
+                      color: const Color(0xFFFFE4E9),
+                      child: const Icon(
+                        Icons.restaurant_menu,
+                        size: 64,
+                        color: Color(0xFFFFB6C1),
                       ),
                     ),
                   ),
-                ),
-              ],
+                  // Favorite button
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: onFavoriteTap,
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.9),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            recipe.isFavorite ? Icons.favorite : Icons.favorite_border,
+                            color: recipe.isFavorite 
+                                ? const Color(0xFFFF69B4) 
+                                : const Color(0xFF8B7355),
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             // Content
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    recipe.name,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  if (recipe.description != null) ...[
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Title
                     Text(
-                      recipe.description!,
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      recipe.name,
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF5D4037), // Marrón oscuro
+                        height: 1.2,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
+                    // Details row
+                    Row(
+                      children: [
+                        // Time icon
+                        Icon(
+                          Icons.access_time_outlined,
+                          size: 16,
+                          color: const Color(0xFF8B7355), // Marrón/gris
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${recipe.prepTimeMinutes} min',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: const Color(0xFF8B7355),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // Difficulty icon
+                        Icon(
+                          _getDifficultyIcon(recipe.difficulty),
+                          size: 16,
+                          color: const Color(0xFF8B7355),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          recipe.difficulty.displayName,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: const Color(0xFF8B7355),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
-                  Row(
-                    children: [
-                      const Icon(Icons.timer, size: 16),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${recipe.prepTimeMinutes} min',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
             ),
           ],
@@ -131,5 +158,15 @@ class RecipeCard extends StatelessWidget {
       ),
     );
   }
-}
 
+  IconData _getDifficultyIcon(Difficulty difficulty) {
+    switch (difficulty) {
+      case Difficulty.easy:
+        return Icons.sentiment_satisfied_alt_outlined;
+      case Difficulty.medium:
+        return Icons.sentiment_neutral_outlined;
+      case Difficulty.hard:
+        return Icons.sentiment_very_dissatisfied_outlined;
+    }
+  }
+}

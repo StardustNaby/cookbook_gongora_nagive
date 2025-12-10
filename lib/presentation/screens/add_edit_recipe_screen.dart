@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/entities/recipe.dart';
 import '../../domain/entities/ingredient.dart';
-import '../../domain/entities/step.dart';
+import '../../domain/entities/step.dart' as domain;
 import '../providers/recipe_providers.dart';
 
 class AddEditRecipeScreen extends ConsumerStatefulWidget {
@@ -29,7 +29,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
   
   Difficulty _difficulty = Difficulty.medium;
   final List<Ingredient> _ingredients = [];
-  final List<Step> _steps = [];
+  final List<domain.Step> _steps = [];
   
   final _ingredientNameController = TextEditingController();
   final _ingredientQuantityController = TextEditingController();
@@ -103,7 +103,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
     if (_stepDescriptionController.text.isNotEmpty) {
       setState(() {
         _steps.add(
-          Step(
+          domain.Step(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
             recipeId: recipe?.id ?? widget.recipe?.id ?? widget.recipeId ?? '',
             stepNumber: _steps.length + 1,
@@ -120,7 +120,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
       _steps.removeAt(index);
       // Reorder steps
       for (int i = 0; i < _steps.length; i++) {
-        _steps[i] = Step(
+        _steps[i] = domain.Step(
           id: _steps[i].id,
           recipeId: _steps[i].recipeId,
           stepNumber: i + 1,
@@ -130,10 +130,10 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
     });
   }
 
-  Future<void> _saveRecipe() async {
+  Future<void> _saveRecipe([Recipe? currentRecipeParam]) async {
     if (_formKey.currentState!.validate()) {
       final now = DateTime.now();
-      final currentRecipe = recipe ?? widget.recipe;
+      final currentRecipe = currentRecipeParam ?? widget.recipe;
       final newRecipe = Recipe(
         id: currentRecipe?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
         name: _nameController.text,
@@ -188,10 +188,10 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
       );
     }
     
-    return _buildForm(context, widget.recipe);
+    return _buildForm(context, widget.recipe, widget.recipe);
   }
 
-  Widget _buildForm(BuildContext context, Recipe? recipe) {
+  Widget _buildForm(BuildContext context, Recipe? recipe, [Recipe? currentRecipe]) {
     return Scaffold(
       appBar: AppBar(
         title: Text(recipe == null ? 'Nueva Receta' : 'Editar Receta'),
@@ -386,7 +386,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: _saveRecipe,
+                onPressed: () => _saveRecipe(currentRecipe ?? recipe),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),

@@ -1,5 +1,4 @@
 import '../../domain/entities/recipe.dart';
-import '../../domain/entities/ingredient.dart';
 import '../../domain/entities/step.dart';
 import 'ingredient_model.dart';
 import 'step_model.dart';
