@@ -9,27 +9,23 @@ import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key});
+  final bool showFavoritesOnly;
+  
+  const HomeScreen({
+    super.key,
+    this.showFavoritesOnly = false,
+  });
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   Difficulty? _selectedDifficulty;
 
   @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
   void dispose() {
-    _tabController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -192,36 +188,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    final recipesAsync = ref.watch(recipeNotifierProvider);
-    final favoriteRecipesAsync = ref.watch(favoriteRecipesProvider);
+    // Usar el provider según showFavoritesOnly
+    final recipesAsync = widget.showFavoritesOnly
+        ? ref.watch(favoriteRecipesProvider)
+        : ref.watch(recipeNotifierProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Mi Álbum de Recetas',
+          widget.showFavoritesOnly ? 'Recetas Favoritas' : 'Mis Recetas',
           style: GoogleFonts.playfairDisplay(
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
-        ),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: const Color(0xFFFF69B4), // Indicador rosa
-          labelColor: const Color(0xFFFF69B4), // Color del texto activo
-          unselectedLabelColor: const Color(0xFF8B7355), // Color del texto inactivo
-          labelStyle: GoogleFonts.playfairDisplay(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-          unselectedLabelStyle: GoogleFonts.playfairDisplay(
-            fontSize: 16,
-            fontWeight: FontWeight.normal,
-          ),
-          indicatorSize: TabBarIndicatorSize.tab,
-          tabs: const [
-            Tab(text: 'Todas'),
-            Tab(text: 'Mis Favoritas'),
-          ],
         ),
         actions: [
           IconButton(
@@ -289,15 +268,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ),
           // Recipes list
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                // Tab 1: Todas las recetas
-                _buildRecipesList(recipesAsync),
-                // Tab 2: Recetas favoritas
-                _buildRecipesList(favoriteRecipesAsync),
-              ],
-            ),
+            child: _buildRecipesList(recipesAsync),
           ),
         ],
       ),
@@ -328,9 +299,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     _searchController.text.isNotEmpty ||
                             _selectedDifficulty != null
                         ? Icons.search_off
-                        : _tabController.index == 0
-                            ? Icons.menu_book_outlined
-                            : Icons.favorite_border,
+                        : widget.showFavoritesOnly
+                            ? Icons.favorite_border
+                            : Icons.menu_book_outlined,
                     size: 100,
                     color: Theme.of(context).colorScheme.secondary.withOpacity(0.4),
                   ),
@@ -339,9 +310,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     _searchController.text.isNotEmpty ||
                             _selectedDifficulty != null
                         ? 'No se encontraron recetas'
-                        : _tabController.index == 0
-                            ? 'No hay recetitas aún'
-                            : 'No tienes recetas favoritas',
+                        : widget.showFavoritesOnly
+                            ? 'No tienes recetas favoritas'
+                            : 'No hay recetitas aún',
                     style: GoogleFonts.playfairDisplay(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -354,9 +325,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     _searchController.text.isNotEmpty ||
                             _selectedDifficulty != null
                         ? 'Intenta con otros términos de búsqueda\n o ajusta los filtros'
-                        : _tabController.index == 0
-                            ? 'Comienza a crear tu colección\nde recetas favoritas'
-                            : 'Marca algunas recetas como favoritas\npara verlas aquí',
+                        : widget.showFavoritesOnly
+                            ? 'Marca algunas recetas como favoritas\npara verlas aquí'
+                            : 'Comienza a crear tu colección\nde recetas favoritas',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       color: const Color(0xFF8B7355),

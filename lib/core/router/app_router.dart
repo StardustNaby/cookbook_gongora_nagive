@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../presentation/screens/splash_screen.dart';
+import '../../presentation/screens/main_wrapper_screen.dart';
 import '../../presentation/screens/home_screen.dart';
 import '../../presentation/screens/login_screen.dart';
 import '../../presentation/screens/register_screen.dart';
@@ -39,6 +40,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      // Rutas fuera del Shell (sin barra de navegación)
       GoRoute(
         path: '/splash',
         name: 'splash',
@@ -54,12 +56,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'register',
         builder: (context, state) => const RegisterScreen(),
       ),
-      GoRoute(
-        path: '/home',
-        name: 'home',
-        builder: (context, state) => const HomeScreen(),
-      ),
-      // IMPORTANTE: Las rutas más específicas deben ir ANTES de las genéricas
+      // Rutas de recetas fuera del Shell (root navigator)
       GoRoute(
         path: '/recipe/add',
         name: 'recipe-add',
@@ -80,6 +77,38 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final recipeId = state.pathParameters['id']!;
           return RecipeDetailScreen(recipeId: recipeId);
         },
+      ),
+      // Shell con navegación anidada
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return MainWrapperScreen(navigationShell: navigationShell);
+        },
+        branches: [
+          // Rama 1: Inicio
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/home',
+                name: 'home',
+                builder: (context, state) => const HomeScreen(
+                  showFavoritesOnly: false,
+                ),
+              ),
+            ],
+          ),
+          // Rama 2: Favoritos
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/favorites',
+                name: 'favorites',
+                builder: (context, state) => const HomeScreen(
+                  showFavoritesOnly: true,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     ],
   );
