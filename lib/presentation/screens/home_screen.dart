@@ -411,7 +411,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       width: 200,
                       height: 200,
                       child: Lottie.asset(
-                        'assets/lottie/Cooking.json',
+                        'assets/lottie/vacio.lottie',
                         fit: BoxFit.contain,
                         repeat: true,
                         animate: true,
