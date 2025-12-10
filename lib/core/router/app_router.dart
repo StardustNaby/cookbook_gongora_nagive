@@ -47,14 +47,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'home',
         builder: (context, state) => const HomeScreen(),
       ),
-      GoRoute(
-        path: '/recipe/:id',
-        name: 'recipe-detail',
-        builder: (context, state) {
-          final recipeId = state.pathParameters['id']!;
-          return RecipeDetailScreen(recipeId: recipeId);
-        },
-      ),
+      // IMPORTANTE: Las rutas más específicas deben ir ANTES de las genéricas
       GoRoute(
         path: '/recipe/add',
         name: 'recipe-add',
@@ -66,6 +59,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final recipeId = state.pathParameters['id']!;
           return AddEditRecipeScreen(recipeId: recipeId);
+        },
+      ),
+      GoRoute(
+        path: '/recipe/:id',
+        name: 'recipe-detail',
+        builder: (context, state) {
+          final recipeId = state.pathParameters['id']!;
+          return RecipeDetailScreen(recipeId: recipeId);
         },
       ),
     ],
