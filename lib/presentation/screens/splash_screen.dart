@@ -35,7 +35,7 @@ class _SplashScreenState extends State<SplashScreen> {
               width: 250,
               height: 250,
               child: Lottie.asset(
-                'assets/lottie/Cooking.json',
+                'assets/lottie/cooking.lottie',
                 fit: BoxFit.contain,
                 repeat: true,
                 animate: true,
