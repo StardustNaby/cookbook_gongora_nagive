@@ -39,24 +39,37 @@ class RecipeCard extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  // Verificar si hay una URL de imagen válida
-                  (recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty)
-                      ? CachedNetworkImage(
-                          imageUrl: recipe.imageUrl!,
-                          height: 180,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => Container(
+                  // Hero animation para conectar con el detalle
+                  Hero(
+                    tag: 'recipe-image-${recipe.id}', // El tag debe ser igual que en DetailScreen
+                    child: (recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty)
+                        ? CachedNetworkImage(
+                            imageUrl: recipe.imageUrl!,
                             height: 180,
-                            color: const Color(0xFFFFE4E9),
-                            child: const Center(
-                              child: CircularProgressIndicator(
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              height: 180,
+                              color: const Color(0xFFFFE4E9),
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  color: Color(0xFFFFB6C1),
+                                ),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              height: 180,
+                              color: const Color(0xFFFFE4E9),
+                              child: const Icon(
+                                Icons.restaurant_menu,
+                                size: 64,
                                 color: Color(0xFFFFB6C1),
                               ),
                             ),
-                          ),
-                          errorWidget: (context, url, error) => Container(
+                          )
+                        : Container(
                             height: 180,
+                            width: double.infinity,
                             color: const Color(0xFFFFE4E9),
                             child: const Icon(
                               Icons.restaurant_menu,
@@ -64,17 +77,7 @@ class RecipeCard extends StatelessWidget {
                               color: Color(0xFFFFB6C1),
                             ),
                           ),
-                        )
-                      : Container(
-                          height: 180,
-                          width: double.infinity,
-                          color: const Color(0xFFFFE4E9),
-                          child: const Icon(
-                            Icons.restaurant_menu,
-                            size: 64,
-                            color: Color(0xFFFFB6C1),
-                          ),
-                        ),
+                  ),
                   // Favorite button
                   Positioned(
                     top: 8,
