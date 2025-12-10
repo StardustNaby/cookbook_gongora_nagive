@@ -74,18 +74,3 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
-
-// Helper class to convert Stream to Listenable for GoRouter
-class GoRouterRefreshStream extends ChangeNotifier {
-  GoRouterRefreshStream(Stream<bool> stream) {
-    _subscription = stream.listen((_) => notifyListeners());
-  }
-
-  late final StreamSubscription<bool> _subscription;
-
-  @override
-  void dispose() {
-    _subscription.cancel();
-    super.dispose();
-  }
-}
