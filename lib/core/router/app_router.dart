@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../presentation/screens/splash_screen.dart';
 import '../../presentation/screens/home_screen.dart';
 import '../../presentation/screens/login_screen.dart';
 import '../../presentation/screens/register_screen.dart';
@@ -13,11 +14,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final isSignedIn = ref.watch(isSignedInProvider);
 
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/splash',
     redirect: (context, state) {
       final isAuthenticated = isSignedIn;
+      final isGoingToSplash = state.matchedLocation == '/splash';
       final isGoingToLogin = state.matchedLocation == '/login';
       final isGoingToRegister = state.matchedLocation == '/register';
+
+      // Si está en splash, no redirigir
+      if (isGoingToSplash) {
+        return null;
+      }
 
       // Si no está autenticado y no va a login/register, redirigir a login
       if (!isAuthenticated && !isGoingToLogin && !isGoingToRegister) {
@@ -32,6 +39,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/splash',
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: '/login',
         name: 'login',

@@ -176,14 +176,29 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
     setState(() {
       _steps.removeAt(index);
       // Reorder steps
-      for (int i = 0; i < _steps.length; i++) {
-        _steps[i] = domain.Step(
-          id: _steps[i].id,
-          recipeId: _steps[i].recipeId,
-          stepNumber: i + 1,
-          description: _steps[i].description,
-        );
+      _reorderSteps();
+    });
+  }
+
+  void _reorderSteps() {
+    for (int i = 0; i < _steps.length; i++) {
+      _steps[i] = domain.Step(
+        id: _steps[i].id,
+        recipeId: _steps[i].recipeId,
+        stepNumber: i + 1,
+        description: _steps[i].description,
+      );
+    }
+  }
+
+  void _onStepReorder(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
       }
+      final step = _steps.removeAt(oldIndex);
+      _steps.insert(newIndex, step);
+      _reorderSteps();
     });
   }
 
@@ -638,61 +653,100 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              // Steps list
-              ..._steps.asMap().entries.map((entry) {
-                final index = entry.key;
-                final step = entry.value;
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
+              // Steps list with ReorderableListView
+              if (_steps.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFFFFF8F0),
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(
                       color: const Color(0xFFFFE4E9),
                       width: 1.5,
                     ),
                   ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
+                  child: Text(
+                    'No hay pasos aún. Agrega el primero arriba.',
+                    style: GoogleFonts.poppins(
+                      color: const Color(0xFF8B7355),
+                      fontSize: 14,
+                      fontStyle: FontStyle.italic,
                     ),
-                    leading: Container(
-                      width: 36,
-                      height: 36,
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              else
+                ReorderableListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _steps.length,
+                  onReorder: _onStepReorder,
+                  itemBuilder: (context, index) {
+                    final step = _steps[index];
+                    return Container(
+                      key: ValueKey(step.id),
+                      margin: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFF91A4),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${step.stepNumber}',
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(
+                          color: const Color(0xFFFFE4E9),
+                          width: 1.5,
                         ),
                       ),
-                    ),
-                    title: Text(
-                      step.description,
-                      style: GoogleFonts.poppins(
-                        color: const Color(0xFF5D4037),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        leading: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF91A4),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${step.stepNumber}',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          step.description,
+                          style: GoogleFonts.poppins(
+                            color: const Color(0xFF5D4037),
+                          ),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.drag_handle,
+                              color: Color(0xFFFF91A4),
+                              size: 24,
+                            ),
+                            const SizedBox(width: 8),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                size: 20,
+                                color: Colors.red,
+                              ),
+                              onPressed: () => _removeStep(index),
+                              tooltip: 'Eliminar',
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(
-                        Icons.delete_outline,
-                        size: 20,
-                        color: Colors.red,
-                      ),
-                      onPressed: () => _removeStep(index),
-                      tooltip: 'Eliminar',
-                    ),
-                  ),
-                );
-              }),
+                    );
+                  },
+                ),
               const SizedBox(height: 8),
               // Add step field
               Container(
