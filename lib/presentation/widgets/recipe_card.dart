@@ -77,19 +77,19 @@ class RecipeCard extends StatelessWidget {
             // Content - Ajustado para evitar overflow
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: MainAxisSize.max,
                   children: [
-                    // Title - Flexible para evitar overflow
-                    Flexible(
+                    // Title - Usar Expanded para ocupar espacio disponible
+                    Expanded(
                       flex: 2,
                       child: Text(
                         recipe.name,
                         style: GoogleFonts.playfairDisplay(
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.titleMedium?.color ?? const Color(0xFF5D4037),
                           height: 1.2,
@@ -98,52 +98,49 @@ class RecipeCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    // Details row - Flexible para evitar overflow
-                    Flexible(
-                      flex: 1,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Time icon
-                          Icon(
-                            Icons.access_time_outlined,
-                            size: 14,
-                            color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
-                          ),
-                          const SizedBox(width: 3),
-                          Flexible(
-                            child: Text(
-                              '${recipe.prepTimeMinutes} min',
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
-                                fontWeight: FontWeight.w500,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                    const SizedBox(height: 4),
+                    // Details row - Sin Flexible, solo Row normal
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Time icon
+                        Icon(
+                          Icons.access_time_outlined,
+                          size: 13,
+                          color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
+                        ),
+                        const SizedBox(width: 3),
+                        Flexible(
+                          child: Text(
+                            '${recipe.prepTimeMinutes} min',
+                            style: GoogleFonts.poppins(
+                              fontSize: 10,
+                              color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
+                              fontWeight: FontWeight.w500,
                             ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(width: 8),
-                          // Difficulty icon
-                          Icon(
-                            _getDifficultyIcon(recipe.difficulty),
-                            size: 14,
-                            color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
-                          ),
-                          const SizedBox(width: 3),
-                          Flexible(
-                            child: Text(
-                              recipe.difficulty.displayName,
-                              style: GoogleFonts.poppins(
-                                fontSize: 11,
-                                color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
-                                fontWeight: FontWeight.w500,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(width: 6),
+                        // Difficulty icon
+                        Icon(
+                          _getDifficultyIcon(recipe.difficulty),
+                          size: 13,
+                          color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
+                        ),
+                        const SizedBox(width: 3),
+                        Flexible(
+                          child: Text(
+                            recipe.difficulty.displayName,
+                            style: GoogleFonts.poppins(
+                              fontSize: 10,
+                              color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
+                              fontWeight: FontWeight.w500,
                             ),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -156,10 +153,13 @@ class RecipeCard extends StatelessWidget {
   }
 
   Widget _buildImageWidget(String? imageUrl) {
+    // Reducir altura de imagen para dar más espacio al contenido
+    const imageHeight = 160.0;
+    
     // Si no hay URL, mostrar placeholder
     if (imageUrl == null || imageUrl.trim().isEmpty) {
       return Container(
-        height: 180,
+        height: imageHeight,
         width: double.infinity,
         color: const Color(0xFFFFE4E9),
         child: const Icon(
@@ -177,7 +177,7 @@ class RecipeCard extends StatelessWidget {
     if (cleanedUrl == null || !ImageHelper.isValidImageUrl(cleanedUrl)) {
       debugPrint('Invalid image URL: $imageUrl (cleaned: $cleanedUrl)');
       return Container(
-        height: 180,
+        height: imageHeight,
         width: double.infinity,
         color: const Color(0xFFFFE4E9),
         child: const Icon(
@@ -190,12 +190,12 @@ class RecipeCard extends StatelessWidget {
     
     return CachedNetworkImage(
       imageUrl: cleanedUrl,
-      height: 180,
+      height: imageHeight,
       width: double.infinity,
       fit: BoxFit.cover,
       httpHeaders: ImageHelper.getImageHeaders(cleanedUrl),
       placeholder: (context, url) => Container(
-        height: 180,
+        height: imageHeight,
         color: const Color(0xFFFFE4E9),
         child: const Center(
           child: CircularProgressIndicator(
@@ -208,7 +208,7 @@ class RecipeCard extends StatelessWidget {
         debugPrint('Error loading image: $url');
         debugPrint('Error details: $error');
         return Container(
-          height: 180,
+          height: 160,
           color: const Color(0xFFFFE4E9),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
