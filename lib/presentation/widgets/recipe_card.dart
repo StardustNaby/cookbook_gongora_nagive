@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/recipe.dart';
+import '../../core/utils/image_helper.dart';
 
 class RecipeCard extends StatelessWidget {
   final Recipe recipe;
@@ -42,41 +43,7 @@ class RecipeCard extends StatelessWidget {
                   // Hero animation para conectar con el detalle
                   Hero(
                     tag: 'recipe-image-${recipe.id}', // El tag debe ser igual que en DetailScreen
-                    child: (recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty)
-                        ? CachedNetworkImage(
-                            imageUrl: recipe.imageUrl!,
-                            height: 180,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              height: 180,
-                              color: const Color(0xFFFFE4E9),
-                              child: const Center(
-                                child: CircularProgressIndicator(
-                                  color: Color(0xFFFFB6C1),
-                                ),
-                              ),
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              height: 180,
-                              color: const Color(0xFFFFE4E9),
-                              child: const Icon(
-                                Icons.restaurant_menu,
-                                size: 64,
-                                color: Color(0xFFFFB6C1),
-                              ),
-                            ),
-                          )
-                        : Container(
-                            height: 180,
-                            width: double.infinity,
-                            color: const Color(0xFFFFE4E9),
-                            child: const Icon(
-                              Icons.restaurant_menu,
-                              size: 64,
-                              color: Color(0xFFFFB6C1),
-                            ),
-                          ),
+                    child: _buildImageWidget(recipe.imageUrl),
                   ),
                   // Favorite button
                   Positioned(
@@ -171,6 +138,67 @@ class RecipeCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildImageWidget(String? imageUrl) {
+    final cleanedUrl = ImageHelper.cleanImageUrl(imageUrl);
+    final isValid = ImageHelper.isValidImageUrl(cleanedUrl);
+    
+    if (!isValid || cleanedUrl == null) {
+      return Container(
+        height: 180,
+        width: double.infinity,
+        color: const Color(0xFFFFE4E9),
+        child: const Icon(
+          Icons.restaurant_menu,
+          size: 64,
+          color: Color(0xFFFFB6C1),
+        ),
+      );
+    }
+    
+    return CachedNetworkImage(
+      imageUrl: cleanedUrl,
+      height: 180,
+      width: double.infinity,
+      fit: BoxFit.cover,
+      httpHeaders: ImageHelper.getImageHeaders(cleanedUrl),
+      placeholder: (context, url) => Container(
+        height: 180,
+        color: const Color(0xFFFFE4E9),
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFFFFB6C1),
+          ),
+        ),
+      ),
+      errorWidget: (context, url, error) {
+        // Log del error para debugging (opcional)
+        debugPrint('Error loading image: $url - $error');
+        return Container(
+          height: 180,
+          color: const Color(0xFFFFE4E9),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.broken_image,
+                size: 48,
+                color: Color(0xFFFFB6C1),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Error al cargar',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: const Color(0xFFFFB6C1).withOpacity(0.7),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

@@ -8,6 +8,7 @@ import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 import '../widgets/ingredient_item.dart';
 import '../widgets/step_item.dart';
+import '../../core/utils/image_helper.dart';
 import 'add_edit_recipe_screen.dart';
 
 class RecipeDetailScreen extends ConsumerWidget {
@@ -39,35 +40,7 @@ class RecipeDetailScreen extends ConsumerWidget {
                     ),
                     child: Hero(
                       tag: 'recipe-image-${recipe.id}',
-                      child: (recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty)
-                          ? CachedNetworkImage(
-                              imageUrl: recipe.imageUrl!,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(
-                                color: const Color(0xFFFFE4E9),
-                                child: const Center(
-                                  child: CircularProgressIndicator(
-                                    color: Color(0xFFFFB6C1),
-                                  ),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) => Container(
-                                color: const Color(0xFFFFE4E9),
-                                child: const Icon(
-                                  Icons.restaurant_menu,
-                                  size: 80,
-                                  color: Color(0xFFFFB6C1),
-                                ),
-                              ),
-                            )
-                          : Container(
-                              color: const Color(0xFFFFE4E9),
-                              child: const Icon(
-                                Icons.restaurant_menu,
-                                size: 80,
-                                color: Color(0xFFFFB6C1),
-                              ),
-                            ),
+                      child: _buildImageWidget(recipe.imageUrl),
                     ),
                   ),
                 ),
@@ -294,6 +267,62 @@ class RecipeDetailScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildImageWidget(String? imageUrl) {
+    final cleanedUrl = ImageHelper.cleanImageUrl(imageUrl);
+    final isValid = ImageHelper.isValidImageUrl(cleanedUrl);
+    
+    if (!isValid || cleanedUrl == null) {
+      return Container(
+        color: const Color(0xFFFFE4E9),
+        child: const Center(
+          child: Icon(
+            Icons.restaurant_menu,
+            size: 80,
+            color: Color(0xFFFFB6C1),
+          ),
+        ),
+      );
+    }
+    
+    return CachedNetworkImage(
+      imageUrl: cleanedUrl,
+      fit: BoxFit.cover,
+      httpHeaders: ImageHelper.getImageHeaders(cleanedUrl),
+      placeholder: (context, url) => Container(
+        color: const Color(0xFFFFE4E9),
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFFFFB6C1),
+          ),
+        ),
+      ),
+      errorWidget: (context, url, error) {
+        debugPrint('Error loading image: $url - $error');
+        return Container(
+          color: const Color(0xFFFFE4E9),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.broken_image,
+                size: 64,
+                color: Color(0xFFFFB6C1),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Error al cargar imagen',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: const Color(0xFFFFB6C1).withOpacity(0.7),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

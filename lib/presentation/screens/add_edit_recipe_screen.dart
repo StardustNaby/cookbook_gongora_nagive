@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../domain/entities/recipe.dart';
 import '../../domain/entities/ingredient.dart';
 import '../../domain/entities/step.dart' as domain;
+import '../../core/utils/image_helper.dart';
 import '../providers/recipe_providers.dart';
 
 class AddEditRecipeScreen extends ConsumerStatefulWidget {
@@ -237,8 +239,8 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
           ? null 
           : _descriptionController.text.trim(),
       imageUrl: _imageUrlController.text.trim().isEmpty 
-          ? null 
-          : _imageUrlController.text.trim(),
+          ? null
+          : ImageHelper.cleanImageUrl(_imageUrlController.text.trim()),
       prepTimeMinutes: int.tryParse(_prepTimeController.text.trim()) ?? 0,
       difficulty: _difficulty,
       isFavorite: currentRecipe?.isFavorite ?? false,
@@ -427,13 +429,44 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
               // Image URL field
               TextFormField(
                 controller: _imageUrlController,
+                onChanged: (_) => setState(() {}), // Para actualizar la vista previa
                 decoration: _buildInputDecoration(
                   'URL de la imagen',
                   prefixIcon: Icons.image,
+                ).copyWith(
+                  helperText: 'Pega la URL de la imagen. Si es de Google Images, se limpiará automáticamente.',
+                  helperMaxLines: 2,
                 ),
                 style: GoogleFonts.poppins(),
                 keyboardType: TextInputType.url,
+                validator: (value) {
+                  if (value != null && value.trim().isNotEmpty) {
+                    final cleanedUrl = ImageHelper.cleanImageUrl(value.trim());
+                    if (!ImageHelper.isValidImageUrl(cleanedUrl)) {
+                      return 'URL de imagen no válida';
+                    }
+                  }
+                  return null;
+                },
               ),
+              // Image preview
+              if (_imageUrlController.text.trim().isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(
+                      color: const Color(0xFFFFE4E9),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: _buildImagePreview(_imageUrlController.text.trim()),
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               // Prep time and difficulty row
               Row(
@@ -807,6 +840,74 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImagePreview(String imageUrl) {
+    final cleanedUrl = ImageHelper.cleanImageUrl(imageUrl);
+    final isValid = ImageHelper.isValidImageUrl(cleanedUrl);
+    
+    if (!isValid || cleanedUrl == null) {
+      return Container(
+        color: const Color(0xFFFFE4E9),
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.broken_image,
+                size: 48,
+                color: Color(0xFFFFB6C1),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'URL no válida',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFFFFB6C1),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
+    return CachedNetworkImage(
+      imageUrl: cleanedUrl,
+      fit: BoxFit.cover,
+      httpHeaders: ImageHelper.getImageHeaders(cleanedUrl),
+      placeholder: (context, url) => Container(
+        color: const Color(0xFFFFE4E9),
+        child: const Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFFFFB6C1),
+          ),
+        ),
+      ),
+      errorWidget: (context, url, error) => Container(
+        color: const Color(0xFFFFE4E9),
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.broken_image,
+                size: 48,
+                color: Color(0xFFFFB6C1),
+              ),
+              SizedBox(height: 8),
+              Text(
+                'Error al cargar',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFFFFB6C1),
                 ),
               ),
             ],
