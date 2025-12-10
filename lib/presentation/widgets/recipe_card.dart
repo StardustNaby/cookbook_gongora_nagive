@@ -68,14 +68,18 @@ class RecipeCard extends StatelessWidget {
                   top: 8,
                   left: 8,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.circular(12),
+                      color: Theme.of(context).colorScheme.secondary.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.tertiary,
+                        width: 1.5,
+                      ),
                     ),
                     child: Text(
                       recipe.difficulty.displayName,
-                      style: const TextStyle(
+                      style: GoogleFonts.poppins(
                         color: Colors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
