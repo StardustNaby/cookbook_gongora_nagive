@@ -74,21 +74,22 @@ class RecipeCard extends StatelessWidget {
                 ],
               ),
             ),
-            // Content
+            // Content - Ajustado para evitar overflow
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(12.0),
+                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Title
+                    // Title - Flexible para evitar overflow
                     Flexible(
+                      flex: 2,
                       child: Text(
                         recipe.name,
                         style: GoogleFonts.playfairDisplay(
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).textTheme.titleMedium?.color ?? const Color(0xFF5D4037),
                           height: 1.2,
@@ -97,43 +98,44 @@ class RecipeCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     // Details row - Flexible para evitar overflow
                     Flexible(
+                      flex: 1,
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           // Time icon
                           Icon(
                             Icons.access_time_outlined,
-                            size: 16,
+                            size: 14,
                             color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 3),
                           Flexible(
                             child: Text(
                               '${recipe.prepTimeMinutes} min',
                               style: GoogleFonts.poppins(
-                                fontSize: 12,
+                                fontSize: 11,
                                 color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
                                 fontWeight: FontWeight.w500,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
                           // Difficulty icon
                           Icon(
                             _getDifficultyIcon(recipe.difficulty),
-                            size: 16,
+                            size: 14,
                             color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 3),
                           Flexible(
                             child: Text(
                               recipe.difficulty.displayName,
                               style: GoogleFonts.poppins(
-                                fontSize: 12,
+                                fontSize: 11,
                                 color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
                                 fontWeight: FontWeight.w500,
                               ),

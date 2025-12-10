@@ -299,31 +299,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         : ref.watch(recipeNotifierProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.showFavoritesOnly ? 'Recetas Favoritas' : 'Mis Recetas',
-          style: GoogleFonts.playfairDisplay(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () => _showFilterBottomSheet(context),
-            tooltip: 'Filtros',
-          ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              ref.read(recipeNotifierProvider.notifier).refresh();
-            },
-            tooltip: 'Actualizar',
-          ),
-        ],
-      ),
+      // Sin AppBar aquí - el MainWrapperScreen ya tiene uno
+      appBar: null,
       body: Column(
         children: [
+          // Title section (ya que no hay AppBar)
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+            color: Theme.of(context).scaffoldBackgroundColor,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.showFavoritesOnly ? 'Recetas Favoritas' : 'Mis Recetas',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.filter_list),
+                  onPressed: () => _showFilterBottomSheet(context),
+                  tooltip: 'Filtros',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () {
+                    ref.read(recipeNotifierProvider.notifier).refresh();
+                  },
+                  tooltip: 'Actualizar',
+                ),
+              ],
+            ),
+          ),
           // Search bar
           Container(
             padding: const EdgeInsets.all(16),
@@ -449,7 +458,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             padding: const EdgeInsets.all(12),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.75,
+              childAspectRatio: 0.70, // Reducido para dar más espacio vertical
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
             ),
