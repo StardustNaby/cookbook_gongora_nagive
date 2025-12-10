@@ -410,18 +410,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     SizedBox(
                       width: 200,
                       height: 200,
-                      child: Lottie.asset(
-                        'assets/lottie/vacio.lottie',
-                        fit: BoxFit.contain,
-                        repeat: true,
-                        animate: true,
-                        errorBuilder: (context, error, stackTrace) {
-                          // Fallback si la animación falla
-                          return Icon(
-                            Icons.menu_book_outlined,
-                            size: 100,
-                            color: Theme.of(context).colorScheme.secondary.withOpacity(0.4),
-                          );
+                      child: Builder(
+                        builder: (context) {
+                          try {
+                            return Lottie.asset(
+                              'assets/lottie/vacio.lottie',
+                              fit: BoxFit.contain,
+                              repeat: true,
+                              animate: true,
+                              errorBuilder: (context, error, stackTrace) {
+                                debugPrint('Error loading Lottie: $error');
+                                // Fallback si la animación falla
+                                return Icon(
+                                  Icons.menu_book_outlined,
+                                  size: 100,
+                                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.4),
+                                );
+                              },
+                            );
+                          } catch (e) {
+                            debugPrint('Exception loading Lottie: $e');
+                            // Fallback en caso de excepción
+                            return Icon(
+                              Icons.menu_book_outlined,
+                              size: 100,
+                              color: Theme.of(context).colorScheme.secondary.withOpacity(0.4),
+                            );
+                          }
                         },
                       ),
                     )
