@@ -39,26 +39,35 @@ class RecipeDetailScreen extends ConsumerWidget {
                     ),
                     child: Hero(
                       tag: 'recipe-image-${recipe.id}',
-                      child: CachedNetworkImage(
-                        imageUrl: recipe.imageUrl ?? '',
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          color: const Color(0xFFFFE4E9),
-                          child: const Center(
-                            child: CircularProgressIndicator(
-                              color: Color(0xFFFFB6C1),
+                      child: (recipe.imageUrl != null && recipe.imageUrl!.isNotEmpty)
+                          ? CachedNetworkImage(
+                              imageUrl: recipe.imageUrl!,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                color: const Color(0xFFFFE4E9),
+                                child: const Center(
+                                  child: CircularProgressIndicator(
+                                    color: Color(0xFFFFB6C1),
+                                  ),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                color: const Color(0xFFFFE4E9),
+                                child: const Icon(
+                                  Icons.restaurant_menu,
+                                  size: 80,
+                                  color: Color(0xFFFFB6C1),
+                                ),
+                              ),
+                            )
+                          : Container(
+                              color: const Color(0xFFFFE4E9),
+                              child: const Icon(
+                                Icons.restaurant_menu,
+                                size: 80,
+                                color: Color(0xFFFFB6C1),
+                              ),
                             ),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: const Color(0xFFFFE4E9),
-                          child: const Icon(
-                            Icons.restaurant_menu,
-                            size: 80,
-                            color: Color(0xFFFFB6C1),
-                          ),
-                        ),
-                      ),
                     ),
                   ),
                 ),

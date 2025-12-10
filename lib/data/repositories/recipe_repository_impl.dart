@@ -238,11 +238,17 @@ class RecipeRepositoryImpl implements RecipeRepository {
   @override
   Future<Recipe> toggleFavorite(String id) async {
     try {
+      // Obtener la receta actual
       final recipe = await getRecipeById(id);
+      final newFavoriteStatus = !recipe.isFavorite;
+      
+      // Actualizar en Supabase
       await _supabase
           .from('recipes')
-          .update({'is_favorite': !recipe.isFavorite})
+          .update({'is_favorite': newFavoriteStatus})
           .eq('id', id);
+      
+      // Retornar la receta actualizada
       return await getRecipeById(id);
     } catch (e) {
       throw Exception('Error toggling favorite: $e');

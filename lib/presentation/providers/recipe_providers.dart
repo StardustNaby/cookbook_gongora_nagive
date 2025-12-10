@@ -67,7 +67,17 @@ class RecipeNotifier extends Notifier<AsyncValue<List<Recipe>>> {
   Future<void> toggleFavorite(String id) async {
     try {
       final repository = ref.read(recipeRepositoryProvider);
-      await repository.toggleFavorite(id);
+      final updatedRecipe = await repository.toggleFavorite(id);
+      
+      // Actualizar el estado local inmediatamente para feedback visual
+      state.whenData((recipes) {
+        final updatedRecipes = recipes.map((recipe) {
+          return recipe.id == id ? updatedRecipe : recipe;
+        }).toList();
+        state = AsyncValue.data(updatedRecipes);
+      });
+      
+      // Recargar desde el servidor para asegurar sincronización
       await _loadRecipes();
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
