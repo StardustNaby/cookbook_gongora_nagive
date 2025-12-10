@@ -37,7 +37,7 @@ class HomeScreen extends ConsumerWidget {
                   Icon(
                     Icons.restaurant_menu,
                     size: 64,
-                    color: Colors.grey[400],
+                    color: Theme.of(context).colorScheme.secondary.withOpacity(0.5),
                   ),
                   const SizedBox(height: 16),
                   Text(
