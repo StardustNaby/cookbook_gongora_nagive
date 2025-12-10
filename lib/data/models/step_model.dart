@@ -9,10 +9,20 @@ class StepModel extends Step {
   });
 
   factory StepModel.fromJson(Map<String, dynamic> json) {
+    // Manejar step_number que puede venir como int o String
+    int stepNumber;
+    if (json['step_number'] is int) {
+      stepNumber = json['step_number'] as int;
+    } else if (json['step_number'] is String) {
+      stepNumber = int.tryParse(json['step_number'] as String) ?? 1;
+    } else {
+      stepNumber = (json['step_number'] as num?)?.toInt() ?? 1;
+    }
+
     return StepModel(
       id: json['id'] as String,
       recipeId: json['recipe_id'] as String,
-      stepNumber: json['step_number'] as int,
+      stepNumber: stepNumber,
       description: json['description'] as String,
     );
   }

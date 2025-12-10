@@ -19,12 +19,22 @@ class RecipeModel extends Recipe {
   });
 
   factory RecipeModel.fromJson(Map<String, dynamic> json) {
+    // Manejar prep_time_minutes que puede venir como int o String
+    int prepTime;
+    if (json['prep_time_minutes'] is int) {
+      prepTime = json['prep_time_minutes'] as int;
+    } else if (json['prep_time_minutes'] is String) {
+      prepTime = int.tryParse(json['prep_time_minutes'] as String) ?? 0;
+    } else {
+      prepTime = (json['prep_time_minutes'] as num?)?.toInt() ?? 0;
+    }
+
     return RecipeModel(
       id: json['id'] as String,
       name: json['name'] as String,
       description: json['description'] as String?,
       imageUrl: json['image_url'] as String?,
-      prepTimeMinutes: json['prep_time_minutes'] as int,
+      prepTimeMinutes: prepTime,
       difficulty: Difficulty.fromString(json['difficulty'] as String),
       isFavorite: json['is_favorite'] as bool? ?? false,
       createdAt: DateTime.parse(json['created_at'] as String),

@@ -10,11 +10,21 @@ class IngredientModel extends Ingredient {
   });
 
   factory IngredientModel.fromJson(Map<String, dynamic> json) {
+    // Manejar quantity que puede venir como num, int, double o String
+    double quantity;
+    if (json['quantity'] is num) {
+      quantity = (json['quantity'] as num).toDouble();
+    } else if (json['quantity'] is String) {
+      quantity = double.tryParse(json['quantity'] as String) ?? 0.0;
+    } else {
+      quantity = 0.0;
+    }
+
     return IngredientModel(
       id: json['id'] as String,
       recipeId: json['recipe_id'] as String,
       name: json['name'] as String,
-      quantity: (json['quantity'] as num).toDouble(),
+      quantity: quantity,
       unit: json['unit'] as String,
     );
   }
