@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/theme_provider.dart';
 
-class MainWrapperScreen extends StatelessWidget {
+class MainWrapperScreen extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
 
   const MainWrapperScreen({
@@ -11,7 +13,10 @@ class MainWrapperScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: NavigationBar(
@@ -22,8 +27,10 @@ class MainWrapperScreen extends StatelessWidget {
             initialLocation: index == navigationShell.currentIndex,
           );
         },
-        backgroundColor: const Color(0xFFFFF8F0), // Rosa pálido coquette
-        indicatorColor: const Color(0xFFFFE4E9), // Indicador rosa suave
+        backgroundColor: isDark 
+            ? theme.colorScheme.surface 
+            : theme.navigationBarTheme.backgroundColor,
+        indicatorColor: theme.navigationBarTheme.indicatorColor,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         destinations: [
           NavigationDestination(
@@ -37,7 +44,6 @@ class MainWrapperScreen extends StatelessWidget {
             label: 'Favoritos',
           ),
         ],
-        // Aplicar tema coquette
         elevation: 8,
       ),
     );

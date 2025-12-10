@@ -306,7 +306,7 @@ class RecipeDetailScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFFFF8F0), // Rosa pálido
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30), // Bordes muy redondeados
         ),
@@ -320,10 +320,7 @@ class RecipeDetailScreen extends ConsumerWidget {
         ),
         content: Text(
           'Esta acción no se puede deshacer.',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            color: const Color(0xFF5D4037),
-          ),
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
         actions: [
           TextButton(

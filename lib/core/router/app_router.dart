@@ -9,6 +9,7 @@ import '../../presentation/screens/login_screen.dart';
 import '../../presentation/screens/register_screen.dart';
 import '../../presentation/screens/recipe_detail_screen.dart';
 import '../../presentation/screens/add_edit_recipe_screen.dart';
+import '../../presentation/screens/profile_screen.dart';
 import '../../presentation/providers/auth_providers.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -77,6 +78,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final recipeId = state.pathParameters['id']!;
           return RecipeDetailScreen(recipeId: recipeId);
         },
+      ),
+      GoRoute(
+        path: '/profile',
+        name: 'profile',
+        builder: (context, state) => const ProfileScreen(),
       ),
       // Shell con navegación anidada
       StatefulShellRoute.indexedStack(

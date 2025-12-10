@@ -568,7 +568,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF8F0),
+                  color: Theme.of(context).scaffoldBackgroundColor,
                   borderRadius: BorderRadius.circular(15),
                   border: Border.all(
                     color: const Color(0xFFFFE4E9),
@@ -667,9 +667,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
                   ),
                   child: Text(
                     'No hay pasos aún. Agrega el primero arriba.',
-                    style: GoogleFonts.poppins(
-                      color: const Color(0xFF8B7355),
-                      fontSize: 14,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       fontStyle: FontStyle.italic,
                     ),
                     textAlign: TextAlign.center,
@@ -719,9 +717,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
                         ),
                         title: Text(
                           step.description,
-                          style: GoogleFonts.poppins(
-                            color: const Color(0xFF5D4037),
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -752,7 +748,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFF8F0),
+                  color: Theme.of(context).scaffoldBackgroundColor,
                   borderRadius: BorderRadius.circular(15),
                   border: Border.all(
                     color: const Color(0xFFFFE4E9),

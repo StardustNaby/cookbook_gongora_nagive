@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/recipe.dart';
 import '../providers/recipe_providers.dart';
+import '../providers/theme_provider.dart';
 import '../widgets/recipe_card.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
@@ -20,9 +21,18 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
+enum SortOption {
+  dateDesc, // Más recientes primero (por defecto)
+  dateAsc,  // Más antiguas primero
+  alphabetical, // Alfabético A-Z
+  prepTimeAsc,  // Menor tiempo primero
+  prepTimeDesc, // Mayor tiempo primero
+}
+
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   Difficulty? _selectedDifficulty;
+  SortOption _sortOption = SortOption.dateDesc; // Por defecto: más recientes primero
 
   @override
   void dispose() {
@@ -49,7 +59,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }).toList();
     }
 
+    // Apply sorting
+    filtered = _sortRecipes(filtered);
+
     return filtered;
+  }
+
+  List<Recipe> _sortRecipes(List<Recipe> recipes) {
+    final sorted = List<Recipe>.from(recipes);
+    
+    switch (_sortOption) {
+      case SortOption.dateDesc:
+        sorted.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        break;
+      case SortOption.dateAsc:
+        sorted.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        break;
+      case SortOption.alphabetical:
+        sorted.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        break;
+      case SortOption.prepTimeAsc:
+        sorted.sort((a, b) => a.prepTimeMinutes.compareTo(b.prepTimeMinutes));
+        break;
+      case SortOption.prepTimeDesc:
+        sorted.sort((a, b) => b.prepTimeMinutes.compareTo(a.prepTimeMinutes));
+        break;
+    }
+    
+    return sorted;
   }
 
   void _showFilterBottomSheet(BuildContext context) {
@@ -57,9 +94,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFFFFF8F0), // Rosa pálido
-          borderRadius: BorderRadius.only(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(30),
             topRight: Radius.circular(30),
           ),
@@ -83,14 +120,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 20),
             // Title
             Text(
-              'Filtrar por Dificultad',
+              'Filtros y Ordenamiento',
               style: GoogleFonts.playfairDisplay(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF5D4037),
+                color: Theme.of(context).textTheme.titleLarge?.color ?? const Color(0xFF5D4037),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
+            // Sort section
+            Text(
+              'Ordenar por',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                _buildSortChip('Más recientes', SortOption.dateDesc),
+                _buildSortChip('Más antiguas', SortOption.dateAsc),
+                _buildSortChip('A-Z', SortOption.alphabetical),
+                _buildSortChip('Tiempo ↑', SortOption.prepTimeAsc),
+                _buildSortChip('Tiempo ↓', SortOption.prepTimeDesc),
+              ],
+            ),
+            const SizedBox(height: 24),
+            // Filter section
+            Text(
+              'Filtrar por Dificultad',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+            ),
+            const SizedBox(height: 12),
             // Difficulty chips
             Wrap(
               spacing: 12,
@@ -136,15 +205,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 onPressed: () {
                   setState(() {
                     _selectedDifficulty = null;
+                    _sortOption = SortOption.dateDesc;
                   });
                   Navigator.of(context).pop();
                 },
                 child: Text(
                   'Limpiar Filtros',
-                  style: GoogleFonts.poppins(
-                    color: const Color(0xFF8B7355),
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),
             ),
@@ -161,13 +228,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         label,
         style: GoogleFonts.poppins(
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? Colors.white : const Color(0xFF5D4037),
+          color: isSelected ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
         ),
       ),
       selected: isSelected,
       onSelected: (selected) {
         setState(() {
           _selectedDifficulty = selected ? difficulty : null;
+        });
+      },
+      backgroundColor: const Color(0xFFFFE4E9), // Rosa pastel
+      selectedColor: const Color(0xFFFF91A4), // Rosa más fuerte cuando está seleccionado
+      checkmarkColor: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: isSelected
+              ? const Color(0xFFFF69B4)
+              : const Color(0xFFFFB6C1),
+          width: isSelected ? 2 : 1,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSortChip(String label, SortOption option) {
+    final isSelected = _sortOption == option;
+    return FilterChip(
+      label: Text(
+        label,
+        style: GoogleFonts.poppins(
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
+        ),
+      ),
+      selected: isSelected,
+      onSelected: (selected) {
+        setState(() {
+          _sortOption = option;
         });
       },
       backgroundColor: const Color(0xFFFFE4E9), // Rosa pastel
@@ -203,10 +302,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
         actions: [
+          // Theme toggle button
+          Consumer(
+            builder: (context, ref, child) {
+              final themeMode = ref.watch(themeProvider);
+              final isDark = themeMode == ThemeMode.dark;
+              return IconButton(
+                icon: Icon(isDark ? Icons.dark_mode : Icons.light_mode),
+                onPressed: () {
+                  ref.read(themeProvider.notifier).toggleTheme();
+                },
+                tooltip: isDark ? 'Modo claro' : 'Modo oscuro',
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.filter_list),
             onPressed: () => _showFilterBottomSheet(context),
             tooltip: 'Filtros',
+          ),
+          IconButton(
+            icon: const Icon(Icons.person_outline),
+            onPressed: () {
+              context.push('/profile');
+            },
+            tooltip: 'Mi Perfil',
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -222,15 +342,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // Search bar
           Container(
             padding: const EdgeInsets.all(16),
-            color: const Color(0xFFFFF8F0),
+            color: Theme.of(context).scaffoldBackgroundColor,
             child: TextField(
               controller: _searchController,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 hintText: 'Buscar recetas...',
-                hintStyle: GoogleFonts.poppins(
-                  color: const Color(0xFF8B7355),
-                ),
+                hintStyle: Theme.of(context).textTheme.bodySmall,
                 prefixIcon: const Icon(
                   Icons.search,
                   color: Color(0xFFFF69B4), // Icono de lupa rosa
@@ -263,7 +381,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   vertical: 16,
                 ),
               ),
-              style: GoogleFonts.poppins(),
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
           // Recipes list
@@ -316,7 +434,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     style: GoogleFonts.playfairDisplay(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF8B7355),
+                      color: Theme.of(context).textTheme.titleLarge?.color ?? const Color(0xFF8B7355),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -328,10 +446,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         : widget.showFavoritesOnly
                             ? 'Marca algunas recetas como favoritas\npara verlas aquí'
                             : 'Comienza a crear tu colección\nde recetas favoritas',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      color: const Color(0xFF8B7355),
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium,
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -380,10 +495,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 16),
             Text(
               'Cargando recetitas...',
-              style: GoogleFonts.poppins(
-                fontSize: 16,
-                color: const Color(0xFF8B7355),
-              ),
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
         ),

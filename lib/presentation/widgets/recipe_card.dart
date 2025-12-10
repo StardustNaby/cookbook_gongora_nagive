@@ -23,7 +23,7 @@ class RecipeCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
-      color: const Color(0xFFFFF8F0), // Rosa muy pálido / crema
+      color: Theme.of(context).scaffoldBackgroundColor,
       elevation: 2,
       child: InkWell(
         onTap: onTap,
