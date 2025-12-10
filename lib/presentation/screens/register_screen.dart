@@ -6,31 +6,44 @@ import '../providers/auth_providers.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends ConsumerStatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     if (_formKey.currentState!.validate()) {
+      if (_passwordController.text != _confirmPasswordController.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Las contraseñas no coinciden'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
       final authNotifier = ref.read(authNotifierProvider.notifier);
       
-      await authNotifier.signIn(
+      await authNotifier.signUp(
         _emailController.text.trim(),
         _passwordController.text,
       );
@@ -62,7 +75,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Bow decoration (if asset exists, otherwise use icon)
+                  // Bow decoration
                   Container(
                     height: 100,
                     alignment: Alignment.center,
@@ -81,7 +94,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(height: 24),
                   // Title
                   Text(
-                    'Iniciar Sesión',
+                    'Registrarse',
                     style: GoogleFonts.playfairDisplay(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
@@ -212,6 +225,73 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       return null;
                     },
                   ),
+                  const SizedBox(height: 20),
+                  // Confirm Password field
+                  TextFormField(
+                    controller: _confirmPasswordController,
+                    obscureText: _obscureConfirmPassword,
+                    decoration: InputDecoration(
+                      labelText: 'Confirmar Contraseña',
+                      labelStyle: GoogleFonts.poppins(
+                        color: const Color(0xFFFFB6C1),
+                      ),
+                      prefixIcon: const Icon(
+                        Icons.lock_outline,
+                        color: Color(0xFFFFB6C1),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                          color: const Color(0xFFFFB6C1),
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
+                          });
+                        },
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFFFB6C1),
+                          width: 2,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFFFB6C1),
+                          width: 2,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: const BorderSide(
+                          color: Color(0xFFFF91A4),
+                          width: 2.5,
+                        ),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide(
+                          color: Colors.red.shade300,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    style: GoogleFonts.poppins(),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Por favor confirma tu contraseña';
+                      }
+                      if (value != _passwordController.text) {
+                        return 'Las contraseñas no coinciden';
+                      }
+                      return null;
+                    },
+                  ),
                   const SizedBox(height: 32),
                   // Submit button
                   authState.when(
@@ -227,7 +307,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         elevation: 4,
                       ),
                       child: Text(
-                        'Iniciar Sesión',
+                        'Registrarse',
                         style: GoogleFonts.playfairDisplay(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -254,7 +334,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             elevation: 4,
                           ),
                           child: Text(
-                            'Iniciar Sesión',
+                            'Registrarse',
                             style: GoogleFonts.playfairDisplay(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -266,13 +346,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Register link
+                  // Login link
                   TextButton(
                     onPressed: () {
-                      context.push('/register');
+                      context.go('/login');
                     },
                     child: Text(
-                      '¿No tienes cuenta? Regístrate',
+                      '¿Ya tienes cuenta? Inicia sesión',
                       style: GoogleFonts.poppins(
                         color: const Color(0xFFFF91A4),
                         fontSize: 16,
@@ -289,3 +369,4 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 }
+

@@ -1,14 +1,27 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../core/config/supabase_config.dart';
 import 'repository_providers.dart';
 
 // Auth State Notifier
 class AuthNotifier extends StateNotifier<AsyncValue<String?>> {
   AuthNotifier(this._repository) : super(const AsyncValue.loading()) {
     _checkAuthStatus();
+    _listenToAuthChanges();
   }
 
   final AuthRepository _repository;
+  StreamSubscription<AuthState>? _authSubscription;
+
+  void _listenToAuthChanges() {
+    final supabase = SupabaseConfig.client;
+    _authSubscription = supabase.auth.onAuthStateChange.listen((data) {
+      final userId = data.session?.user.id;
+      state = AsyncValue.data(userId);
+    });
+  }
 
   Future<void> _checkAuthStatus() async {
     try {
@@ -49,6 +62,16 @@ class AuthNotifier extends StateNotifier<AsyncValue<String?>> {
       state = AsyncValue.error(e, stackTrace);
     }
   }
+
+  Stream<AsyncValue<String?>> get stream {
+    return Stream.value(state);
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
+  }
 }
 
 final authNotifierProvider = StateNotifierProvider<AuthNotifier, AsyncValue<String?>>((ref) {
@@ -75,4 +98,3 @@ final currentUserIdProvider = Provider<String?>((ref) {
     error: (_, __) => null,
   );
 });
-
