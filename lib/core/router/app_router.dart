@@ -35,9 +35,8 @@ final appRouter = GoRouter(
       path: '/recipe/edit/:id',
       name: 'recipe-edit',
       builder: (context, state) {
-        // Note: This route would need the recipe object passed via extra
-        // For now, we'll use the recipe ID and fetch it in the screen
-        return const AddEditRecipeScreen();
+        final recipeId = state.pathParameters['id']!;
+        return AddEditRecipeScreen(recipeId: recipeId);
       },
     ),
   ],

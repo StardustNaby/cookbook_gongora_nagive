@@ -8,10 +8,12 @@ import '../providers/recipe_providers.dart';
 
 class AddEditRecipeScreen extends ConsumerStatefulWidget {
   final Recipe? recipe;
+  final String? recipeId;
 
   const AddEditRecipeScreen({
     super.key,
     this.recipe,
+    this.recipeId,
   });
 
   @override
@@ -39,14 +41,22 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
   void initState() {
     super.initState();
     if (widget.recipe != null) {
-      _nameController.text = widget.recipe!.name;
-      _descriptionController.text = widget.recipe!.description ?? '';
-      _imageUrlController.text = widget.recipe!.imageUrl ?? '';
-      _prepTimeController.text = widget.recipe!.prepTimeMinutes.toString();
-      _difficulty = widget.recipe!.difficulty;
-      _ingredients.addAll(widget.recipe!.ingredients);
-      _steps.addAll(widget.recipe!.steps);
+      _loadRecipeData(widget.recipe!);
+    } else if (widget.recipeId != null) {
+      // Load recipe by ID - will be handled in build method
     }
+  }
+
+  void _loadRecipeData(Recipe recipe) {
+    _nameController.text = recipe.name;
+    _descriptionController.text = recipe.description ?? '';
+    _imageUrlController.text = recipe.imageUrl ?? '';
+    _prepTimeController.text = recipe.prepTimeMinutes.toString();
+    _difficulty = recipe.difficulty;
+    _ingredients.clear();
+    _ingredients.addAll(recipe.ingredients);
+    _steps.clear();
+    _steps.addAll(recipe.steps);
   }
 
   @override
@@ -123,15 +133,16 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
   Future<void> _saveRecipe() async {
     if (_formKey.currentState!.validate()) {
       final now = DateTime.now();
-      final recipe = Recipe(
-        id: widget.recipe?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      final currentRecipe = recipe ?? widget.recipe;
+      final newRecipe = Recipe(
+        id: currentRecipe?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
         name: _nameController.text,
         description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
         imageUrl: _imageUrlController.text.isEmpty ? null : _imageUrlController.text,
         prepTimeMinutes: int.tryParse(_prepTimeController.text) ?? 0,
         difficulty: _difficulty,
-        isFavorite: widget.recipe?.isFavorite ?? false,
-        createdAt: widget.recipe?.createdAt ?? now,
+        isFavorite: currentRecipe?.isFavorite ?? false,
+        createdAt: currentRecipe?.createdAt ?? now,
         updatedAt: now,
         ingredients: _ingredients,
         steps: _steps,
@@ -139,10 +150,10 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
 
       final notifier = ref.read(recipeNotifierProvider.notifier);
       
-      if (widget.recipe == null) {
-        await notifier.createRecipe(recipe);
+      if (currentRecipe == null) {
+        await notifier.createRecipe(newRecipe);
       } else {
-        await notifier.updateRecipe(recipe);
+        await notifier.updateRecipe(newRecipe);
       }
 
       if (mounted) {
@@ -153,9 +164,37 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // If we have a recipeId but no recipe, load it
+    if (widget.recipeId != null && widget.recipe == null) {
+      final recipeAsync = ref.watch(recipeByIdProvider(widget.recipeId!));
+      
+      return recipeAsync.when(
+        data: (recipe) {
+          // Load recipe data if not already loaded
+          if (_nameController.text.isEmpty) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _loadRecipeData(recipe);
+            });
+          }
+          return _buildForm(context, recipe);
+        },
+        loading: () => const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        ),
+        error: (error, stackTrace) => Scaffold(
+          appBar: AppBar(),
+          body: Center(child: Text('Error: $error')),
+        ),
+      );
+    }
+    
+    return _buildForm(context, widget.recipe);
+  }
+
+  Widget _buildForm(BuildContext context, Recipe? recipe) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.recipe == null ? 'Nueva Receta' : 'Editar Receta'),
+        title: Text(recipe == null ? 'Nueva Receta' : 'Editar Receta'),
       ),
       body: Form(
         key: _formKey,
@@ -351,7 +390,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: Text(widget.recipe == null ? 'Crear Receta' : 'Actualizar Receta'),
+                child: Text(recipe == null ? 'Crear Receta' : 'Actualizar Receta'),
               ),
             ],
           ),
