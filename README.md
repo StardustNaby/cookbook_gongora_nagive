@@ -62,24 +62,71 @@ Una aplicación móvil desarrollada en Flutter para gestionar, crear y organizar
 
 ## 🗄️ Estructura de Base de Datos
 
-El proyecto utiliza **Supabase (PostgreSQL)**. Aquí tienes el diagrama relacional simplificado:
+El proyecto utiliza **Supabase (PostgreSQL)**. Aquí tienes el diagrama relacional:
 
-1.  **users (auth.users):** Gestionado internamente por Supabase.
+```
+┌─────────────────┐
+│  auth.users     │
+│  (Supabase)     │
+└────────┬────────┘
+         │
+         │ user_id (FK)
+         │
+┌────────▼────────┐
+│    recipes      │
+├─────────────────┤
+│ id (PK, UUID)   │
+│ user_id (FK)    │
+│ name            │
+│ description     │
+│ prep_time_min   │
+│ servings        │
+│ difficulty      │
+│ image_url       │
+│ is_favorite     │
+│ created_at      │
+│ updated_at      │
+└────┬───────┬────┘
+     │       │
+     │       │ recipe_id (FK, ON DELETE CASCADE)
+     │       │
+┌────▼───┐ ┌─▼──────────┐
+│ingred. │ │   steps    │
+├────────┤ ├───────────┤
+│id (PK) │ │id (PK)    │
+│recipe_ │ │recipe_id  │
+│  id    │ │description │
+│name    │ │step_number│
+│quantity│ └───────────┘
+│unit    │
+│order_  │
+│ index  │
+└────────┘
+```
 
-2.  **recipes:**
-    * `id` (UUID, PK)
-    * `user_id` (FK -> auth.users)
-    * `name`, `description`, `difficulty`, `prep_time_minutes`, `is_favorite`, `image_url`, `created_at`, `updated_at`.
+### Tablas:
 
-3.  **ingredients:**
-    * `id` (UUID, PK)
-    * `recipe_id` (FK -> recipes, ON DELETE CASCADE)
-    * `name`, `quantity`, `unit`, `order_index`.
+1. **users (auth.users):** Gestionado internamente por Supabase.
 
-4.  **steps:**
-    * `id` (UUID, PK)
-    * `recipe_id` (FK -> recipes, ON DELETE CASCADE)
-    * `description`, `step_number`.
+2. **recipes:**
+   * `id` (UUID, PK)
+   * `user_id` (FK -> auth.users)
+   * `name`, `description`, `difficulty`, `prep_time_minutes`, `is_favorite`, `image_url`, `created_at`, `updated_at`.
+
+3. **ingredients:**
+   * `id` (UUID, PK)
+   * `recipe_id` (FK -> recipes, ON DELETE CASCADE)
+   * `name`, `quantity`, `unit`, `order_index`.
+
+4. **steps:**
+   * `id` (UUID, PK)
+   * `recipe_id` (FK -> recipes, ON DELETE CASCADE)
+   * `description`, `step_number`.
+
+### Seguridad (RLS):
+- Row Level Security (RLS) activado en todas las tablas
+- Políticas configuradas para que usuarios solo vean/editen sus propias recetas
+- Eliminación en cascada: al borrar una receta, se eliminan automáticamente sus ingredientes y pasos
 
 Las migraciones SQL están disponibles en `supabase/migrations/001_initial_schema.sql`.
 
@@ -114,6 +161,37 @@ Las migraciones SQL están disponibles en `supabase/migrations/001_initial_schem
     ```bash
     flutter run
     ```
+
+## 🔧 Troubleshooting Común
+
+### Problema: "Error al conectar con Supabase"
+**Solución:** Verifica que el archivo `.env` tenga las credenciales correctas y que el proyecto Supabase esté activo.
+
+### Problema: "No se muestran las recetas"
+**Solución:** 
+1. Verifica que estés autenticado correctamente
+2. Revisa que las políticas RLS estén configuradas en Supabase
+3. Asegúrate de que hayas creado al menos una receta
+
+### Problema: "Las imágenes no se cargan"
+**Solución:**
+1. Verifica que las URLs de imágenes sean válidas y accesibles
+2. Algunas URLs de Google Images pueden requerir headers especiales (ya implementado)
+3. Si usas Google Share links, estos no funcionan directamente - usa URLs directas de imágenes
+
+### Problema: "Error al guardar receta"
+**Solución:**
+1. Verifica que todos los campos requeridos estén llenos
+2. Asegúrate de tener al menos 1 ingrediente y 1 paso
+3. El nombre debe tener mínimo 3 caracteres
+4. El tiempo de preparación debe estar entre 1-999 minutos
+
+### Problema: "APK no muestra los cambios"
+**Solución:**
+1. Ejecuta `flutter clean`
+2. Ejecuta `flutter pub get`
+3. Reconstruye el APK: `flutter build apk --release`
+4. Desinstala la versión anterior antes de instalar la nueva
 
 ---
 

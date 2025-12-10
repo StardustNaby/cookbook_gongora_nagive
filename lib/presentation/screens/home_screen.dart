@@ -393,22 +393,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         final filteredRecipes = _filterRecipes(recipes);
 
         if (filteredRecipes.isEmpty) {
+          // Mostrar animación Lottie cuando no hay recetas (según requerimiento del PDF)
+          final showLottie = _searchController.text.isEmpty && 
+                            _selectedDifficulty == null && 
+                            !widget.showFavoritesOnly;
+          
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(32.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    _searchController.text.isNotEmpty ||
-                            _selectedDifficulty != null
-                        ? Icons.search_off
-                        : widget.showFavoritesOnly
-                            ? Icons.favorite_border
-                            : Icons.menu_book_outlined,
-                    size: 100,
-                    color: Theme.of(context).colorScheme.secondary.withOpacity(0.4),
-                  ),
+                  if (showLottie)
+                    // Animación Lottie cuando no hay recetas (requerimiento del PDF)
+                    SizedBox(
+                      width: 200,
+                      height: 200,
+                      child: Lottie.asset(
+                        'assets/lottie/Cooking.json',
+                        fit: BoxFit.contain,
+                        repeat: true,
+                        animate: true,
+                      ),
+                    )
+                  else
+                    Icon(
+                      _searchController.text.isNotEmpty ||
+                              _selectedDifficulty != null
+                          ? Icons.search_off
+                          : Icons.favorite_border,
+                      size: 100,
+                      color: Theme.of(context).colorScheme.secondary.withOpacity(0.4),
+                    ),
                   const SizedBox(height: 24),
                   Text(
                     _searchController.text.isNotEmpty ||
