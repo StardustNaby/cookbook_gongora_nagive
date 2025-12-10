@@ -16,8 +16,31 @@ class MainWrapperScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final themeMode = ref.watch(themeProvider);
+    final isDarkMode = themeMode == ThemeMode.dark;
     
     return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        actions: [
+          // Theme toggle button
+          IconButton(
+            icon: Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode),
+            onPressed: () {
+              ref.read(themeProvider.notifier).toggleTheme();
+            },
+            tooltip: isDarkMode ? 'Modo claro' : 'Modo oscuro',
+          ),
+          // Profile button
+          IconButton(
+            icon: const Icon(Icons.person_outline),
+            onPressed: () {
+              context.push('/profile');
+            },
+            tooltip: 'Mi Perfil',
+          ),
+        ],
+      ),
       body: navigationShell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,

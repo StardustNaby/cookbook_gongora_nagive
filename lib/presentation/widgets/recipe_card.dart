@@ -81,18 +81,21 @@ class RecipeCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     // Title
-                    Text(
-                      recipe.name,
-                      style: GoogleFonts.playfairDisplay(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF5D4037), // Marrón oscuro
-                        height: 1.2,
+                    Flexible(
+                      child: Text(
+                        recipe.name,
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).textTheme.titleMedium?.color ?? const Color(0xFF5D4037),
+                          height: 1.2,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
                     // Details row
@@ -102,15 +105,18 @@ class RecipeCard extends StatelessWidget {
                         Icon(
                           Icons.access_time_outlined,
                           size: 16,
-                          color: const Color(0xFF8B7355), // Marrón/gris
+                          color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          '${recipe.prepTimeMinutes} min',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: const Color(0xFF8B7355),
-                            fontWeight: FontWeight.w500,
+                        Flexible(
+                          child: Text(
+                            '${recipe.prepTimeMinutes} min',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -118,15 +124,18 @@ class RecipeCard extends StatelessWidget {
                         Icon(
                           _getDifficultyIcon(recipe.difficulty),
                           size: 16,
-                          color: const Color(0xFF8B7355),
+                          color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          recipe.difficulty.displayName,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: const Color(0xFF8B7355),
-                            fontWeight: FontWeight.w500,
+                        Flexible(
+                          child: Text(
+                            recipe.difficulty.displayName,
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],

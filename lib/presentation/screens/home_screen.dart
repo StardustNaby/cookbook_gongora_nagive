@@ -93,7 +93,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.9,
+        ),
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: const BorderRadius.only(
@@ -101,11 +105,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             topRight: Radius.circular(30),
           ),
         ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // Handle bar
             Center(
               child: Container(
@@ -215,7 +220,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -302,31 +308,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
         actions: [
-          // Theme toggle button
-          Consumer(
-            builder: (context, ref, child) {
-              final themeMode = ref.watch(themeProvider);
-              final isDark = themeMode == ThemeMode.dark;
-              return IconButton(
-                icon: Icon(isDark ? Icons.dark_mode : Icons.light_mode),
-                onPressed: () {
-                  ref.read(themeProvider.notifier).toggleTheme();
-                },
-                tooltip: isDark ? 'Modo claro' : 'Modo oscuro',
-              );
-            },
-          ),
           IconButton(
             icon: const Icon(Icons.filter_list),
             onPressed: () => _showFilterBottomSheet(context),
             tooltip: 'Filtros',
-          ),
-          IconButton(
-            icon: const Icon(Icons.person_outline),
-            onPressed: () {
-              context.push('/profile');
-            },
-            tooltip: 'Mi Perfil',
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
