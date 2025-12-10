@@ -98,47 +98,50 @@ class RecipeCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Details row
-                    Row(
-                      children: [
-                        // Time icon
-                        Icon(
-                          Icons.access_time_outlined,
-                          size: 16,
-                          color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            '${recipe.prepTimeMinutes} min',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
-                              fontWeight: FontWeight.w500,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                    // Details row - Flexible para evitar overflow
+                    Flexible(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Time icon
+                          Icon(
+                            Icons.access_time_outlined,
+                            size: 16,
+                            color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        // Difficulty icon
-                        Icon(
-                          _getDifficultyIcon(recipe.difficulty),
-                          size: 16,
-                          color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            recipe.difficulty.displayName,
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
-                              fontWeight: FontWeight.w500,
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              '${recipe.prepTimeMinutes} min',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 12),
+                          // Difficulty icon
+                          Icon(
+                            _getDifficultyIcon(recipe.difficulty),
+                            size: 16,
+                            color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              recipe.difficulty.displayName,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
+                                fontWeight: FontWeight.w500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
