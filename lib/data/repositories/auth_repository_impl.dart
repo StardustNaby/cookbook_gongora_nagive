@@ -16,7 +16,16 @@ class AuthRepositoryImpl implements AuthRepository {
         throw Exception('Sign in failed: No user returned');
       }
     } catch (e) {
-      throw Exception('Error signing in: $e');
+      // Detectar errores de credenciales incorrectas
+      final errorString = e.toString().toLowerCase();
+      if (errorString.contains('invalid login credentials') ||
+          errorString.contains('invalid_credentials') ||
+          errorString.contains('email not confirmed') ||
+          errorString.contains('invalid email or password') ||
+          errorString.contains('incorrect email or password')) {
+        throw Exception('Correo o contraseña incorrectos');
+      }
+      throw Exception('Error al iniciar sesión: $e');
     }
   }
 

@@ -389,34 +389,85 @@ class RecipeDetailScreen extends ConsumerWidget {
           ),
           ElevatedButton(
             onPressed: () async {
+              // Cerrar el diálogo de confirmación primero
               Navigator.of(context).pop();
+              
+              // Guardar el contexto antes de operaciones asíncronas
+              final navigatorContext = context;
+              final messengerContext = ScaffoldMessenger.of(navigatorContext);
+              
+              // Mostrar diálogo de carga
+              showDialog(
+                context: navigatorContext,
+                barrierDismissible: false,
+                builder: (loadingContext) => AlertDialog(
+                  backgroundColor: Theme.of(navigatorContext).scaffoldBackgroundColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CircularProgressIndicator(
+                        color: Color(0xFFFF91A4),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Eliminando...',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          color: const Color(0xFF5D4037),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+              
               try {
-                // Invalidar el provider de la receta específica
-                ref.invalidate(recipeByIdProvider(recipeId));
-                
                 // Eliminar la receta
                 await ref
                     .read(recipeNotifierProvider.notifier)
                     .deleteRecipe(recipeId);
                 
-                if (context.mounted) {
-                  // Navegar a home y mostrar mensaje de éxito
-                  context.go('/home');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Receta eliminada exitosamente'),
-                      backgroundColor: const Color(0xFFFFB6C1),
-                    ),
-                  );
+                // Cerrar el diálogo de carga usando el contexto del diálogo
+                if (navigatorContext.mounted) {
+                  Navigator.of(navigatorContext, rootNavigator: false).pop();
+                  
+                  // Invalidar el provider antes de navegar
+                  ref.invalidate(recipeByIdProvider(recipeId));
+                  
+                  // Navegar a home
+                  navigatorContext.go('/home');
+                  
+                  // Mostrar mensaje de éxito después de un pequeño delay
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    messengerContext.showSnackBar(
+                      SnackBar(
+                        content: const Text('Se ha eliminado correctamente'),
+                        backgroundColor: const Color(0xFFFFB6C1),
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  });
                 }
               } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error al eliminar: $e'),
-                      backgroundColor: Colors.red.shade300,
-                    ),
-                  );
+                // Asegurar que el diálogo de carga se cierre siempre
+                if (navigatorContext.mounted) {
+                  Navigator.of(navigatorContext, rootNavigator: false).pop();
+                  
+                  // Navegar a home incluso si hay error
+                  navigatorContext.go('/home');
+                  
+                  // Mostrar error después de un pequeño delay
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    messengerContext.showSnackBar(
+                      SnackBar(
+                        content: Text('Error al eliminar: $e'),
+                        backgroundColor: Colors.red.shade300,
+                      ),
+                    );
+                  });
                 }
               }
             },

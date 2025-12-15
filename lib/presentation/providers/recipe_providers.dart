@@ -57,16 +57,22 @@ class RecipeNotifier extends Notifier<AsyncValue<List<Recipe>>> {
   Future<void> deleteRecipe(String id) async {
     try {
       // Actualizar el estado local de manera optimista (remover la receta inmediatamente)
-      state.whenData((recipes) {
-        final filteredRecipes = recipes.where((recipe) => recipe.id != id).toList();
-        state = AsyncValue.data(filteredRecipes);
-      });
+      // Solo actualizar si tenemos datos, de lo contrario cargar desde el servidor
+      state = state.when(
+        data: (recipes) {
+          final filteredRecipes = recipes.where((recipe) => recipe.id != id).toList();
+          return AsyncValue.data(filteredRecipes);
+        },
+        loading: () => state, // Mantener loading
+        error: (_, __) => state, // Mantener error
+      );
       
       final repository = ref.read(recipeRepositoryProvider);
       await repository.deleteRecipe(id);
       
       // Recargar desde el servidor para asegurar sincronización
       await _loadRecipes();
+      // No lanzar error - la eliminación fue exitosa
     } catch (e, stackTrace) {
       // Si falla, recargar para restaurar el estado correcto
       try {
@@ -74,6 +80,7 @@ class RecipeNotifier extends Notifier<AsyncValue<List<Recipe>>> {
       } catch (reloadError) {
         // Si la recarga también falla, establecer el error
         state = AsyncValue.error(e, stackTrace);
+        return; // No re-lanzar si ya establecimos el error
       }
       // Re-lanzar el error para que la UI pueda manejarlo
       throw e;

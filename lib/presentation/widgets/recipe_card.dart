@@ -107,7 +107,7 @@ class RecipeCard extends StatelessWidget {
                         Icon(
                           Icons.access_time_outlined,
                           size: 13,
-                          color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
+                          color: Theme.of(context).textTheme.bodyMedium?.color ?? const Color(0xFF5D4037),
                         ),
                         const SizedBox(width: 3),
                         Flexible(
@@ -115,7 +115,7 @@ class RecipeCard extends StatelessWidget {
                             '${recipe.prepTimeMinutes} min',
                             style: GoogleFonts.poppins(
                               fontSize: 10,
-                              color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
+                              color: Theme.of(context).textTheme.bodyMedium?.color ?? const Color(0xFF5D4037),
                               fontWeight: FontWeight.w500,
                             ),
                             overflow: TextOverflow.ellipsis,
@@ -126,7 +126,7 @@ class RecipeCard extends StatelessWidget {
                         Icon(
                           _getDifficultyIcon(recipe.difficulty),
                           size: 13,
-                          color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
+                          color: Theme.of(context).textTheme.bodyMedium?.color ?? const Color(0xFF5D4037),
                         ),
                         const SizedBox(width: 3),
                         Flexible(
@@ -134,7 +134,7 @@ class RecipeCard extends StatelessWidget {
                             recipe.difficulty.displayName,
                             style: GoogleFonts.poppins(
                               fontSize: 10,
-                              color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF8B7355),
+                              color: Theme.of(context).textTheme.bodyMedium?.color ?? const Color(0xFF5D4037),
                               fontWeight: FontWeight.w500,
                             ),
                             overflow: TextOverflow.ellipsis,

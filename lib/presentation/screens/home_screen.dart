@@ -44,12 +44,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   List<Recipe> _filterRecipes(List<Recipe> recipes) {
     var filtered = recipes;
 
-    // Filter by search query
+    // Filter by search query - buscar solo en el título (nombre)
     if (_searchController.text.isNotEmpty) {
-      final query = _searchController.text.toLowerCase();
+      final query = _searchController.text.trim().toLowerCase();
       filtered = filtered.where((recipe) {
-        return recipe.name.toLowerCase().contains(query) ||
-            (recipe.description?.toLowerCase().contains(query) ?? false);
+        return recipe.name.toLowerCase().contains(query);
       }).toList();
     }
 
@@ -232,10 +231,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final isSelected = _selectedDifficulty == difficulty;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
-    // Colores mejorados para mejor contraste
+    // Colores mejorados para mejor contraste - letra más oscura en modo claro
     final unselectedTextColor = isDarkMode 
         ? Colors.white 
-        : const Color(0xFF5D4037); // Marrón oscuro para mejor contraste en modo claro
+        : const Color(0xFF3D2E26); // Marrón muy oscuro para mejor contraste en modo claro
     final unselectedBackgroundColor = isDarkMode
         ? const Color(0xFF2D2D2D) // Gris oscuro en modo oscuro
         : const Color(0xFFFFE4E9); // Rosa pastel en modo claro
@@ -277,10 +276,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final isSelected = _sortOption == option;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
-    // Colores mejorados para mejor contraste
+    // Colores mejorados para mejor contraste - letra más oscura en modo claro
     final unselectedTextColor = isDarkMode 
         ? Colors.white 
-        : const Color(0xFF5D4037); // Marrón oscuro para mejor contraste en modo claro
+        : const Color(0xFF3D2E26); // Marrón muy oscuro para mejor contraste en modo claro
     final unselectedBackgroundColor = isDarkMode
         ? const Color(0xFF2D2D2D) // Gris oscuro en modo oscuro
         : const Color(0xFFFFE4E9); // Rosa pastel en modo claro

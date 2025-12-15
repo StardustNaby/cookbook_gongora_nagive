@@ -37,11 +37,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       if (mounted) {
         final authState = ref.read(authNotifierProvider);
-        authState.whenData((userId) {
-          if (userId != null) {
-            context.go('/home');
-          }
-        });
+        authState.when(
+          data: (userId) {
+            if (userId != null) {
+              context.go('/home');
+            }
+          },
+          loading: () {},
+          error: (error, stackTrace) {
+            final errorMessage = error.toString();
+            final displayMessage = errorMessage.contains('Correo o contraseña incorrectos')
+                ? 'Correo o contraseña incorrectos'
+                : errorMessage.contains('Error al iniciar sesión: Correo o contraseña incorrectos')
+                    ? 'Correo o contraseña incorrectos'
+                    : errorMessage.contains('invalid login credentials') || 
+                      errorMessage.contains('invalid_credentials')
+                        ? 'Correo o contraseña incorrectos'
+                        : 'Error al iniciar sesión';
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(displayMessage),
+                backgroundColor: Colors.red.shade300,
+              ),
+            );
+          },
+        );
       }
     }
   }
@@ -239,7 +260,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     error: (error, _) => Column(
                       children: [
                         ErrorDisplayWidget(
-                          message: error.toString(),
+                          message: error.toString().contains('Correo o contraseña incorrectos')
+                              ? 'Correo o contraseña incorrectos'
+                              : error.toString(),
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton(

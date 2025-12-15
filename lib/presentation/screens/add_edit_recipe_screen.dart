@@ -177,11 +177,75 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
   }
 
   void _removeStep(int index) {
-    setState(() {
-      _steps.removeAt(index);
-      // Reorder steps
-      _reorderSteps();
-    });
+    final step = _steps[index];
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
+        title: Text(
+          '¿Eliminar paso?',
+          style: GoogleFonts.playfairDisplay(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF5D4037),
+          ),
+        ),
+        content: Text(
+          '¿Estás seguro de que deseas eliminar este paso?',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF8B7355),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 12,
+              ),
+            ),
+            child: Text(
+              'Cancelar',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              setState(() {
+                _steps.removeAt(index);
+                // Reorder steps
+                _reorderSteps();
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF69B4),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 12,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: Text(
+              'Sí, eliminar',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _reorderSteps() {
@@ -269,20 +333,26 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
         await notifier.createRecipe(newRecipe);
       } else {
         await notifier.updateRecipe(newRecipe);
+        // Invalidar el provider de la receta específica para refrescar
+        ref.invalidate(recipeByIdProvider(currentRecipe.id));
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              currentRecipe == null 
-                  ? 'Receta creada exitosamente' 
-                  : 'Receta actualizada exitosamente',
-            ),
-            backgroundColor: const Color(0xFFFFB6C1),
-          ),
-        );
+        // Navegar a home y mostrar mensaje de éxito
         context.go('/home');
+        
+        // Mostrar mensaje de éxito después de un pequeño delay
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Se ha guardado correctamente'),
+                backgroundColor: const Color(0xFFFFB6C1),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        });
       }
     } catch (e) {
       if (mounted) {
@@ -520,23 +590,41 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: DropdownButtonFormField<Difficulty>(
-                      value: _difficulty,
-                      decoration: _buildInputDecoration('Dificultad'),
-                      style: GoogleFonts.poppins(),
-                      items: Difficulty.values.map((difficulty) {
-                        return DropdownMenuItem(
-                          value: difficulty,
-                          child: Text(difficulty.displayName),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          setState(() {
-                            _difficulty = value;
-                          });
-                        }
-                      },
+                    child: Theme(
+                      data: Theme.of(context).copyWith(
+                        highlightColor: const Color(0xFFFFE4E9), // Rosa pastel para el resaltado
+                        splashColor: const Color(0xFFFFB6C1), // Rosa más fuerte para el tap
+                      ),
+                      child: DropdownButtonFormField<Difficulty>(
+                        value: _difficulty,
+                        decoration: _buildInputDecoration('Dificultad'),
+                        style: GoogleFonts.poppins(
+                          color: Theme.of(context).textTheme.bodyMedium?.color ?? const Color(0xFF5D4037),
+                        ),
+                        dropdownColor: Colors.white,
+                        iconEnabledColor: const Color(0xFFFF91A4),
+                        iconDisabledColor: Colors.grey,
+                        items: Difficulty.values.map((difficulty) {
+                          final isSelected = _difficulty == difficulty;
+                          return DropdownMenuItem<Difficulty>(
+                            value: difficulty,
+                            child: Text(
+                              difficulty.displayName,
+                              style: GoogleFonts.poppins(
+                                color: const Color(0xFF5D4037), // Color más oscuro para mejor legibilidad
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              _difficulty = value;
+                            });
+                          }
+                        },
+                      ),
                     ),
                   ),
                 ],
@@ -637,6 +725,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
                     Row(
                       children: [
                         Expanded(
+                          flex: 4,
                           child: TextFormField(
                             controller: _ingredientNameController,
                             decoration: _buildInputDecoration('Nombre'),
@@ -651,6 +740,10 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
                             decoration: _buildInputDecoration('Cantidad'),
                             style: GoogleFonts.poppins(fontSize: 14),
                             keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              LengthLimitingTextInputFormatter(3),
+                            ],
                           ),
                         ),
                         const SizedBox(width: 8),
