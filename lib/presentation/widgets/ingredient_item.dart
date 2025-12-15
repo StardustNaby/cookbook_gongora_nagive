@@ -28,18 +28,25 @@ class IngredientItem extends StatelessWidget {
             child: Text(
               ingredient.name,
               style: Theme.of(context).textTheme.bodyLarge,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          Text(
-            '${ingredient.quantity} ${ingredient.unit}',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
+          Flexible(
+            child: Text(
+              '${ingredient.quantity} ${ingredient.unit}',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),
     );
   }
 }
+
+
+
 

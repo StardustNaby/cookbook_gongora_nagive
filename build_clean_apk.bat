@@ -23,3 +23,6 @@ echo ========================================
 echo El APK se encuentra en: build\app\outputs\flutter-apk\app-release.apk
 pause
 
+
+
+

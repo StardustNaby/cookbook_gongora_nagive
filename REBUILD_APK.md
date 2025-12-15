@@ -71,3 +71,6 @@ Después de reconstruir, deberías ver:
 
 4. **Desinstala completamente la app anterior** antes de instalar la nueva
 
+
+
+

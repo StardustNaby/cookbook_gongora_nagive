@@ -37,6 +37,7 @@ class MyApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode, // Usar el provider en lugar de system
       routerConfig: router,
+      debugShowCheckedModeBanner: false,
     );
   }
 }

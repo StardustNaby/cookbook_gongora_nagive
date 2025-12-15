@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/recipe.dart';
 import '../../domain/repositories/recipe_repository.dart';
@@ -57,7 +56,6 @@ class RecipeRepositoryImpl implements RecipeRepository {
           .ilike('name', '%$recipeName%');
     } catch (e) {
       // Silenciar errores de actualización para no interrumpir el flujo
-      debugPrint('Error updating image URL for $recipeName: $e');
     }
   }
 
@@ -227,7 +225,6 @@ class RecipeRepositoryImpl implements RecipeRepository {
       
       return await getRecipeById(newRecipeId);
     } catch (e) {
-      // Mejorar el mensaje de error para debugging
       final errorMessage = e.toString();
       if (errorMessage.contains('null value') || errorMessage.contains('violates')) {
         throw Exception('Error de validación: Verifica que todos los campos requeridos estén completos. Detalle: $errorMessage');
@@ -297,8 +294,22 @@ class RecipeRepositoryImpl implements RecipeRepository {
     try {
       // Gracias al ON DELETE CASCADE de Supabase, solo necesitamos borrar la receta
       // y los ingredientes/pasos se borran solos.
-      await _supabase.from('recipes').delete().eq('id', id);
+      final response = await _supabase
+          .from('recipes')
+          .delete()
+          .eq('id', id)
+          .select();
+      
+      // Verificar que realmente se eliminó una receta
+      // Si response está vacío, significa que no se encontró ninguna receta con ese ID
+      if (response.isEmpty) {
+        throw Exception('No se encontró la receta para eliminar. Puede que ya haya sido eliminada.');
+      }
     } catch (e) {
+      // Re-lanzar el error con más contexto si no es un error personalizado
+      if (e.toString().contains('No se encontró')) {
+        rethrow;
+      }
       throw Exception('Error deleting recipe: $e');
     }
   }

@@ -46,3 +46,6 @@ class CoquetteCard extends StatelessWidget {
   }
 }
 
+
+
+

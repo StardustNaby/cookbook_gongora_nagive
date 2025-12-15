@@ -230,12 +230,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildDifficultyChip(String label, Difficulty? difficulty) {
     final isSelected = _selectedDifficulty == difficulty;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
+    // Colores mejorados para mejor contraste
+    final unselectedTextColor = isDarkMode 
+        ? Colors.white 
+        : const Color(0xFF5D4037); // Marrón oscuro para mejor contraste en modo claro
+    final unselectedBackgroundColor = isDarkMode
+        ? const Color(0xFF2D2D2D) // Gris oscuro en modo oscuro
+        : const Color(0xFFFFE4E9); // Rosa pastel en modo claro
+    
     return FilterChip(
       label: Text(
         label,
         style: GoogleFonts.poppins(
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+          color: isSelected ? Colors.white : unselectedTextColor,
+          fontSize: 14,
         ),
       ),
       selected: isSelected,
@@ -244,7 +255,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _selectedDifficulty = selected ? difficulty : null;
         });
       },
-      backgroundColor: const Color(0xFFFFE4E9), // Rosa pastel
+      backgroundColor: unselectedBackgroundColor,
       selectedColor: const Color(0xFFFF91A4), // Rosa más fuerte cuando está seleccionado
       checkmarkColor: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -253,8 +264,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         side: BorderSide(
           color: isSelected
               ? const Color(0xFFFF69B4)
-              : const Color(0xFFFFB6C1),
-          width: isSelected ? 2 : 1,
+              : isDarkMode
+                  ? const Color(0xFFFFB6C1)
+                  : const Color(0xFFFF91A4), // Borde más visible en modo claro
+          width: isSelected ? 2 : 1.5,
         ),
       ),
     );
@@ -262,12 +275,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildSortChip(String label, SortOption option) {
     final isSelected = _sortOption == option;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
+    // Colores mejorados para mejor contraste
+    final unselectedTextColor = isDarkMode 
+        ? Colors.white 
+        : const Color(0xFF5D4037); // Marrón oscuro para mejor contraste en modo claro
+    final unselectedBackgroundColor = isDarkMode
+        ? const Color(0xFF2D2D2D) // Gris oscuro en modo oscuro
+        : const Color(0xFFFFE4E9); // Rosa pastel en modo claro
+    
     return FilterChip(
       label: Text(
         label,
         style: GoogleFonts.poppins(
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          color: isSelected ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+          color: isSelected ? Colors.white : unselectedTextColor,
+          fontSize: 14,
         ),
       ),
       selected: isSelected,
@@ -276,7 +300,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _sortOption = option;
         });
       },
-      backgroundColor: const Color(0xFFFFE4E9), // Rosa pastel
+      backgroundColor: unselectedBackgroundColor,
       selectedColor: const Color(0xFFFF91A4), // Rosa más fuerte cuando está seleccionado
       checkmarkColor: Colors.white,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -285,8 +309,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         side: BorderSide(
           color: isSelected
               ? const Color(0xFFFF69B4)
-              : const Color(0xFFFFB6C1),
-          width: isSelected ? 2 : 1,
+              : isDarkMode
+                  ? const Color(0xFFFFB6C1)
+                  : const Color(0xFFFF91A4), // Borde más visible en modo claro
+          width: isSelected ? 2 : 1.5,
         ),
       ),
     );
@@ -410,33 +436,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     SizedBox(
                       width: 200,
                       height: 200,
-                      child: Builder(
-                        builder: (context) {
-                          try {
-                            return Lottie.asset(
-                              'assets/lottie/vacio.lottie',
-                              fit: BoxFit.contain,
-                              repeat: true,
-                              animate: true,
-                              errorBuilder: (context, error, stackTrace) {
-                                debugPrint('Error loading Lottie: $error');
-                                // Fallback si la animación falla
-                                return Icon(
-                                  Icons.menu_book_outlined,
-                                  size: 100,
-                                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.4),
-                                );
-                              },
-                            );
-                          } catch (e) {
-                            debugPrint('Exception loading Lottie: $e');
-                            // Fallback en caso de excepción
-                            return Icon(
-                              Icons.menu_book_outlined,
-                              size: 100,
-                              color: Theme.of(context).colorScheme.secondary.withOpacity(0.4),
-                            );
-                          }
+                      child: Lottie.asset(
+                        'assets/lottie/vacio.lottie',
+                        fit: BoxFit.contain,
+                        repeat: true,
+                        animate: true,
+                        errorBuilder: (context, error, stackTrace) {
+                          // Fallback si la animación falla - usar icono directamente
+                          return Icon(
+                            Icons.menu_book_outlined,
+                            size: 100,
+                            color: Theme.of(context).colorScheme.secondary.withOpacity(0.4),
+                          );
                         },
                       ),
                     )

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:lottie/lottie.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -27,48 +26,36 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
             // Lottie Animation con manejo de errores robusto
             SizedBox(
               width: 250,
               height: 250,
-              child: Builder(
-                builder: (context) {
-                  try {
-                    return Lottie.asset(
-                      'assets/lottie/cooking.lottie',
-                      fit: BoxFit.contain,
-                      repeat: true,
-                      animate: true,
-                      errorBuilder: (context, error, stackTrace) {
-                        debugPrint('Error loading Lottie cooking.lottie: $error');
-                        // Fallback si la animación falla
-                        return const Icon(
-                          Icons.restaurant_menu,
-                          size: 120,
-                          color: Color(0xFFFF91A4),
-                        );
-                      },
-                    );
-                  } catch (e) {
-                    debugPrint('Exception loading Lottie cooking.lottie: $e');
-                    // Fallback en caso de excepción
-                    return const Icon(
-                      Icons.restaurant_menu,
-                      size: 120,
-                      color: Color(0xFFFF91A4),
-                    );
-                  }
+              child: Lottie.asset(
+                'assets/lottie/Cooking.json',
+                fit: BoxFit.contain,
+                repeat: true,
+                animate: true,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback si la animación falla - usar icono directamente
+                  return const Icon(
+                    Icons.restaurant_menu,
+                    size: 120,
+                    color: Color(0xFFFF91A4),
+                  );
                 },
               ),
             ),
             const SizedBox(height: 32),
             // App Title
             Text(
-              'Mi Álbum de Recetas',
+              '౨ৎMi Álbum de Recetas౨ৎ',
               style: GoogleFonts.playfairDisplay(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
@@ -77,14 +64,16 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Recetas coquette para tu cocina',
+              '౨ৎMi diario de recetas౨ৎ',
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 color: const Color(0xFF8B7355),
                 fontStyle: FontStyle.italic,
               ),
             ),
-          ],
+              ],
+            ),
+          ),
         ),
       ),
     );

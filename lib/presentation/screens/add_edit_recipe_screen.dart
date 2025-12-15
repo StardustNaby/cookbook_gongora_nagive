@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -41,6 +42,7 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
   final _stepDescriptionController = TextEditingController();
 
   bool _isDataLoaded = false;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -205,6 +207,11 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
   }
 
   Future<void> _saveRecipe([Recipe? currentRecipeParam]) async {
+    // Prevenir múltiples guardados
+    if (_isSaving) {
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -229,6 +236,11 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
       );
       return;
     }
+
+    // Bloquear el botón
+    setState(() {
+      _isSaving = true;
+    });
 
     final now = DateTime.now();
     final currentRecipe = currentRecipeParam ?? widget.recipe;
@@ -280,6 +292,10 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
             backgroundColor: Colors.red.shade300,
           ),
         );
+        // Desbloquear el botón en caso de error
+        setState(() {
+          _isSaving = false;
+        });
       }
     }
   }
@@ -480,15 +496,23 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
                       ),
                       style: GoogleFonts.poppins(),
                       keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(3),
+                      ],
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
                           return 'Requerido';
                         }
-                        if (int.tryParse(value.trim()) == null) {
+                        final intValue = int.tryParse(value.trim());
+                        if (intValue == null) {
                           return 'Debe ser un número';
                         }
-                        if (int.parse(value.trim()) <= 0) {
+                        if (intValue <= 0) {
                           return 'Debe ser mayor a 0';
+                        }
+                        if (intValue > 999) {
+                          return 'Máximo 999 minutos';
                         }
                         return null;
                       },
@@ -824,23 +848,47 @@ class _AddEditRecipeScreenState extends ConsumerState<AddEditRecipeScreen> {
               const SizedBox(height: 32),
               // Save button
               ElevatedButton(
-                onPressed: () => _saveRecipe(currentRecipe ?? recipe),
+                onPressed: _isSaving ? null : () => _saveRecipe(currentRecipe ?? recipe),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFFC1CC),
                   foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.grey.shade300,
+                  disabledForegroundColor: Colors.grey.shade600,
                   padding: const EdgeInsets.symmetric(vertical: 18),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
                   ),
                   elevation: 3,
                 ),
-                child: Text(
-                  recipe == null ? 'Crear Receta' : 'Actualizar Receta',
-                  style: GoogleFonts.playfairDisplay(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: _isSaving
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Guardando...',
+                            style: GoogleFonts.playfairDisplay(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      )
+                    : Text(
+                        recipe == null ? 'Crear Receta' : 'Actualizar Receta',
+                        style: GoogleFonts.playfairDisplay(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
               ),
             ],
           ),

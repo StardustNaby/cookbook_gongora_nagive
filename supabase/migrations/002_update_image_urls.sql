@@ -19,3 +19,6 @@ WHERE image_url LIKE '%share.google%'
 -- Descomenta la siguiente línea:
 -- UPDATE recipes SET image_url = NULL WHERE image_url LIKE '%share.google%';
 
+
+
+

@@ -19,3 +19,6 @@ Esta carpeta contiene las capturas de pantalla de la aplicación CookBook.
 4. Guarda las imágenes en esta carpeta con los nombres indicados
 5. Actualiza el README.md principal con las rutas correctas
 
+
+
+

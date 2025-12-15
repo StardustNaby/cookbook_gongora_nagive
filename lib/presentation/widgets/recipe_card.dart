@@ -175,7 +175,6 @@ class RecipeCard extends StatelessWidget {
     
     // Si después de limpiar no es válida, mostrar placeholder
     if (cleanedUrl == null || !ImageHelper.isValidImageUrl(cleanedUrl)) {
-      debugPrint('Invalid image URL: $imageUrl (cleaned: $cleanedUrl)');
       return Container(
         height: imageHeight,
         width: double.infinity,
@@ -204,9 +203,6 @@ class RecipeCard extends StatelessWidget {
         ),
       ),
       errorWidget: (context, url, error) {
-        // Log del error para debugging
-        debugPrint('Error loading image: $url');
-        debugPrint('Error details: $error');
         return Container(
           height: 160,
           color: const Color(0xFFFFE4E9),

@@ -290,7 +290,6 @@ class RecipeDetailScreen extends ConsumerWidget {
     
     // Si después de limpiar no es válida, mostrar placeholder
     if (cleanedUrl == null || !ImageHelper.isValidImageUrl(cleanedUrl)) {
-      debugPrint('Invalid image URL: $imageUrl (cleaned: $cleanedUrl)');
       return Container(
         color: const Color(0xFFFFE4E9),
         child: const Center(
@@ -316,8 +315,6 @@ class RecipeDetailScreen extends ConsumerWidget {
         ),
       ),
       errorWidget: (context, url, error) {
-        debugPrint('Error loading image: $url');
-        debugPrint('Error details: $error');
         return Container(
           color: const Color(0xFFFFE4E9),
           child: Column(
@@ -394,10 +391,16 @@ class RecipeDetailScreen extends ConsumerWidget {
             onPressed: () async {
               Navigator.of(context).pop();
               try {
+                // Invalidar el provider de la receta específica
+                ref.invalidate(recipeByIdProvider(recipeId));
+                
+                // Eliminar la receta
                 await ref
                     .read(recipeNotifierProvider.notifier)
                     .deleteRecipe(recipeId);
+                
                 if (context.mounted) {
+                  // Navegar a home y mostrar mensaje de éxito
                   context.go('/home');
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
